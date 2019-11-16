@@ -47,11 +47,13 @@
 /* Application header */
 #include "app.h"
 #include "retargetserial.h"
+#include "em_core.h"
 #include <stdio.h>
 
 //Custom header files in INC directory
 #include "inc/leuart.h"
 #include "inc/connection_param.h"
+#include "inc/external_events.h"
 
 
 
@@ -230,6 +232,16 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 	case gecko_evt_system_external_signal_id:
 		printf("Event: gecko_evt_system_external_signal_id\n");
+
+		if (evt->data.evt_system_external_signal.extsignals & LEUART_EVENT)
+		{
+			printf("External Signal Event for LEUART received.\n");
+
+			CORE_AtomicDisableIrq();
+			external_event &= ~LEUART_EVENT;
+			CORE_AtomicEnableIrq();
+
+		}
 		break;
 
 

@@ -59,7 +59,9 @@ src/leuart.o: ../src/leuart.c \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_cmu.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_bus.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_gpio.h \
- D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/leuart.h
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/leuart.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/connection_param.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/external_events.h
 
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_core.h:
 
@@ -182,3 +184,7 @@ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_bus
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_gpio.h:
 
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/leuart.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/connection_param.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/external_events.h:
