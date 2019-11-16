@@ -12,6 +12,7 @@
 #include "em_leuart.h"
 #include "em_cmu.h"
 #include "inc/leuart.h"
+#include <stdio.h>
 
 
 void LEUART0_IRQHandler(void)
