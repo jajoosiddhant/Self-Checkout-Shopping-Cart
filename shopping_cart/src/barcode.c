@@ -19,7 +19,14 @@ void barcode_test_blocking(void)
 {
 	const uint8_t cmd[9] = {0x7E, 0x00, 0x07, 0x01, 0x00, 0x2A, 0x02, 0xD8, 0x0F};
 
-	//TODO: Disable Interrupts over here
+
+	//Disable Interrupts over here in order to support blocking
+	if ((LEUART0->IEN & LEUART_IEN_RXDATAV) || (LEUART0->IEN & LEUART_IEN_TXC))
+	{
+		LEUART_IntEnable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
+		NVIC_DisableIRQ(LEUART0_IRQn);
+	}
+
 
 	leuart_send(LEUART0, cmd[0]);
 	printf("Data Sent\n");

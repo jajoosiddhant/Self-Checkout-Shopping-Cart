@@ -55,11 +55,24 @@ src/leuart.o: ../src/leuart.c \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\Device\SiliconLabs\EFR32BG13P\Include/efr32bg13p_af_pins.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_common.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_assert.h \
- D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_leuart.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_cmu.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_bus.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_gpio.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\soc/native_gecko.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/hal-config.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/board_features.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/ble-configuration.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\hardware\kit\EFR32BG13_BRD4104A\config/hal-config-board.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\halconfig\inc\hal-config/hal-config-types.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_gpio.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/hal-config-app-common.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/bg_types.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/gecko_configuration.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/bg_gattdb_def.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/bg_types.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/bg_errorcodes.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/leuart.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_leuart.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/connection_param.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/external_events.h
 
@@ -175,15 +188,41 @@ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_com
 
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_assert.h:
 
-D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_leuart.h:
-
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_cmu.h:
 
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_bus.h:
 
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_gpio.h:
 
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\soc/native_gecko.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/hal-config.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/board_features.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/ble-configuration.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\hardware\kit\EFR32BG13_BRD4104A\config/hal-config-board.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\halconfig\inc\hal-config/hal-config-types.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_gpio.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/hal-config-app-common.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/bg_types.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/gecko_configuration.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/bg_gattdb_def.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/bg_types.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\protocol\bluetooth\ble_stack\inc\common/bg_errorcodes.h:
+
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/leuart.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_leuart.h:
 
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart/inc/connection_param.h:
 

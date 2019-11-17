@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "em_core.h"
 #include "em_cmu.h"
+#include "native_gecko.h"
 #include "inc/leuart.h"
 #include "inc/connection_param.h"
 #include "inc/external_events.h"
@@ -30,27 +31,29 @@ void LEUART0_IRQHandler(void)
 	uint32_t flags = LEUART_IntGet(LEUART0);
 	LEUART_IntClear(LEUART0, LEUART_IF_TXC);
 
-
-	//Update the External Event
-	external_event |= LEUART_EVENT;
-	gecko_external_signal(external_event);
-
 	// RX portion of the interrupt handler
-//	if (flags & LEUART_IF_RXDATAV)
-//	{
-//		//	  while (LEUART0->STATUS & LEUART_STATUS_RXDATAV)
-//		//    { // While there is still incoming data
-//		//      //char data = LEUART_Rx(LEUART0);
-//		//    }
-//		printf("Received Data");
-//		//  }
-//	}
+	if (flags & LEUART_IF_RXDATAV)
+	{
+		//Update the External Event
+		external_event |= LEUART_EVENT;
+		gecko_external_signal(external_event);
+
+		while (LEUART0->STATUS & LEUART_STATUS_RXDATAV)
+		{
+			// While there is still incoming data
+			char data = leuart_rcv(LEUART0);
+		}
+	}
+
+/*
+ * 	NOT REQUIRED
+ *
 	// TX portion of the interrupt handler
 	if (flags & LEUART_IF_TXC)
 	{
 		//printf("Data Transmitted\n");
 	}
-
+*/
 	//Enable All Interrupts
 	CORE_AtomicEnableIrq();
 }
@@ -93,9 +96,9 @@ void leuart_init(void)
 	LEUART0->ROUTELOC0 |= (LEUART0->ROUTELOC0 & (~_LEUART_ROUTELOC0_RXLOC_MASK)) | LEUART_ROUTELOC0_RXLOC_LOC18;
 
 	// Enable LEUART0 RX/TX interrupts
-//	LEUART_IntEnable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
+	LEUART_IntEnable(LEUART0, LEUART_IEN_RXDATAV);
 	//LEUART_IntEnable(LEUART0, LEUART_IEN_TXC);
-	//NVIC_EnableIRQ(LEUART0_IRQn);
+	NVIC_EnableIRQ(LEUART0_IRQn);
 
 	//for (int i = 0; i < 100000; i++);
 }
@@ -117,7 +120,12 @@ void leuart_loopback_test_blocking(void)
 {
 	const uint8_t cmd[9] = {0x7E, 0x00, 0x07, 0x01, 0x00, 0x2A, 0x02, 0xD8, 0x0F};
 
-	//TODO: Disable Interrupts over here
+	//Disable Interrupts over here in order to support blocking
+	if ((LEUART0->IEN & LEUART_IEN_RXDATAV) || (LEUART0->IEN & LEUART_IEN_TXC))
+	{
+		LEUART_IntEnable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
+		NVIC_DisableIRQ(LEUART0_IRQn);
+	}
 
 	leuart_send(LEUART0, cmd[0]);
 	printf("Data Sent\n");

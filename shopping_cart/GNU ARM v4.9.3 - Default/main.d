@@ -79,6 +79,7 @@ main.o: ../main.c ../init_mcu.h ../board_features.h \
  ../app.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\hardware\kit\common\drivers/retargetserial.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\hardware\kit\common\halconfig/retargetserialhalconfig.h \
+ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_core.h \
  ../inc/leuart.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_leuart.h \
  ../inc/connection_param.h ../inc/external_events.h
@@ -250,6 +251,8 @@ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\hardware\kit\common\bsp/b
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\hardware\kit\common\drivers/retargetserial.h:
 
 D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\hardware\kit\common\halconfig/retargetserialhalconfig.h:
+
+D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_core.h:
 
 ../inc/leuart.h:
 
