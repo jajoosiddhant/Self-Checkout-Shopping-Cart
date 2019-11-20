@@ -13,22 +13,20 @@
 
 
 //Macros for Connection Setup
-#define adv_handle					(0)
-#define adv_interval_min			(400)
-#define adv_interval_max			(400)
-#define adv_timing_duration			(0)
-#define adv_maxevents				(0)
+#define ADV_HANDLE					(0)
+#define ADV_INTERVAL_MIN			(400)
+#define ADV_INTERVAL_MAX			(400)
+#define ADV_TIMING_DURATION			(0)
+#define ADV_MAXEVENTS				(0)
 
 
-#define con_interval_min			(60)
-#define con_interval_max			(60)
-#define con_latency					(3)
-#define con_timeout					(400)
+#define CON_INTERVAL_MIN			(60)
+#define CON_INTERVAL_MAX			(60)
+#define CON_LATENCY					(3)
+#define CON_TIMEOUT					(400)
 
+#define SECURITY_CONFIGURE_FLAG 	(0x0F)
 
-//Global Variables for Connection Setup
-uint8_t connection_handle;
-uint8_t bonding_connnection_handle;
 
 
 

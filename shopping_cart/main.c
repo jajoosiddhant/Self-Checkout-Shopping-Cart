@@ -109,12 +109,17 @@ static gecko_configuration_t config = {
 };
 
 
-// Flag for indicating DFU Reset must be performed
-uint8_t boot_to_dfu = 0;
+
+//Global Variables for Connection Setup
+static uint8_t boot_to_dfu = 0;					// Flag for indicating DFU Reset must be performed
+static uint8_t connection_handle;
+static uint8_t bonding_connnection_handle;
 
 
 //Function Declarations
 static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt);
+static void bt_connection_init(void);
+static void bt_server_print_address(void);
 
 
 /**
@@ -157,6 +162,11 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 	case gecko_evt_system_boot_id:
 		printf("Event: gecko_evt_system_boot_id\n");
+
+		//Set up Bluetooth connection parameters and start advertising.
+		bt_connection_init();
+
+		//gecko_cmd_sm_increase_security(connection_handle);
 		break;
 
 
@@ -176,27 +186,40 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 		/*Configure Connection Parameters*/
 		gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection,
-												con_interval_min,con_interval_max,con_latency,con_timeout);
+										CON_INTERVAL_MIN,CON_INTERVAL_MAX,CON_LATENCY,CON_TIMEOUT);
 		connection_handle = evt->data.evt_le_connection_opened.connection;
 
-		gecko_cmd_sm_increase_security(connection_handle);
+		//gecko_cmd_sm_increase_security(connection_handle);
 
 		bd_addr client_address = evt->data.evt_le_connection_opened.address;
 		sprintf(client_address_string,"X:X:X:X:%x:%x",client_address.addr[1],client_address.addr[0]);
 		printf("Client Address: %s \n", client_address_string);
+
 		break;
 
 
 	case gecko_evt_sm_confirm_passkey_id:
 
 		printf("Event: gecko_evt_sm_confirm_passkey_id\n");
+		fflush(stdout);
+
 		char password[32];
 
-		bonding_connnection_handle = evt->data.evt_sm_confirm_bonding.connection;
+		//bonding_connnection_handle = evt->data.evt_sm_confirm_bonding.connection;
 		sprintf(password,"%lu",evt->data.evt_sm_passkey_display.passkey);
 		printf("Password: %s", password);
+		gecko_cmd_sm_passkey_confirm( bonding_connnection_handle, 1);
+
 		break;
 
+	case gecko_evt_sm_confirm_bonding_id:
+		printf("Event: gecko_evt_sm_confirm_bonding_id\n");
+		bonding_connnection_handle = evt->data.evt_sm_confirm_bonding.connection;
+		struct gecko_msg_sm_bonding_confirm_rsp_t* results;
+		results = gecko_cmd_sm_bonding_confirm(bonding_connnection_handle, 1);
+		printf("Result Bonding: %d",results->result);
+
+		break;
 
 	case gecko_evt_sm_bonded_id:
 		printf("Event: gecko_evt_sm_bonded_id\n");
@@ -270,5 +293,58 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 		break;
 	}
 }
+
+
+
+/**
+ * @brief This function prints the Server Bluetooth Publuc address
+ * @param void
+ * @return void
+ */
+static void bt_server_print_address(void)
+{
+	char server_address_string[6];
+	struct gecko_msg_system_get_bt_address_rsp_t *bt_addr = gecko_cmd_system_get_bt_address();
+	bd_addr *server_address = &bt_addr->address;
+
+	sprintf(server_address_string,"%x:%x:%x:%x:%x:%x", server_address->addr[5],server_address->addr[4]
+												,server_address->addr[3],server_address->addr[2],
+												server_address->addr[1],server_address->addr[0]);
+}
+
+
+
+
+/**
+ * @brief This function initializes the bluetooth connection.
+ * The function prints the server address, deletes all previous bondings, sets into bonding mode,
+ * sets the transmit power to zero, configures and starts advertising.
+ * @param void
+ * @return void
+ */
+static void bt_connection_init(void)
+{
+	//Prints the Server Bluetooth Public address
+	bt_server_print_address();
+
+	//Setting Transmit Power
+	gecko_cmd_system_set_tx_power(0);
+
+	// Delete all previous bondings
+	gecko_cmd_sm_delete_bondings();
+
+	// Configure Security
+	gecko_cmd_sm_configure(SECURITY_CONFIGURE_FLAG,sm_io_capability_displayonly);
+
+	//Set into Bondable Mode
+	gecko_cmd_sm_set_bondable_mode(1);
+
+	// Configure and start general advertising and enable connections.
+	gecko_cmd_le_gap_set_advertise_timing(ADV_HANDLE, ADV_INTERVAL_MIN, ADV_INTERVAL_MAX, ADV_TIMING_DURATION, ADV_MAXEVENTS);
+	gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
+}
+
+
+
 /** @} (end addtogroup app) */
 /** @} (end addtogroup Application) */
