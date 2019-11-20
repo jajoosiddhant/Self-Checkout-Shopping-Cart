@@ -59,7 +59,11 @@ void LEUART0_IRQHandler(void)
 }
 
 
-
+/**
+ * @brief Function to initialize the GPIO pins required for LEUART.
+ * @param void
+ * @return void
+ */
 static void leuart_gpio_init(void)
 {
 	// GPIO clock
@@ -72,7 +76,7 @@ static void leuart_gpio_init(void)
 
 
 /**
- * @brief Initialization function for LEUART. This function enables the required clock and GPIO peripherals.
+ * @brief Initialization function for LEUART0. This function enables the required clock and GPIO peripherals.
  * @param void
  * @return void
  */
@@ -104,19 +108,93 @@ void leuart_init(void)
 }
 
 
+/**
+ * @brief Function to send data using LEUART peripheral.
+ * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
+ * @param uint8_data 8 bit data to be sent.
+ * @return void
+ */
 void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
 {
 	uint8_t tx_data = data;
 	LEUART_Tx(leuart, tx_data);
 }
 
+
+/**
+ * @brief Function to receive data using LEUART Peripheral.
+ * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
+ * @return void
+ */
 char leuart_rcv(LEUART_TypeDef *leuart)
 {
 	return LEUART_Rx(leuart);
 }
 
 
+/**
+ * @brief Function to test LEUART0 peripheral in loopback using blocking mode.
+ * @note This function should be called only after initializing LEUART0 peripheral using leuart_init().
+ * @param void
+ * @return void
+ */
 void leuart_loopback_test_blocking(void)
+{
+	const uint8_t cmd[9] = {0x7E, 0x00, 0x07, 0x01, 0x00, 0x2A, 0x02, 0xD8, 0x0F};
+
+	//Disable Interrupts over here in order to support blocking
+	if ((LEUART0->IEN & LEUART_IEN_RXDATAV) || (LEUART0->IEN & LEUART_IEN_TXC))
+	{
+		LEUART_IntEnable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
+		NVIC_DisableIRQ(LEUART0_IRQn);
+	}
+
+	leuart_send(LEUART0, cmd[0]);
+	printf("Data Sent\n");
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+	leuart_send(LEUART0, cmd[1]);
+	printf("Data Sent\n");
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+	leuart_send(LEUART0, cmd[2]);
+	printf("Data Sent\n");
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+	leuart_send(LEUART0, cmd[3]);
+	printf("Data Sent\n");
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+	leuart_send(LEUART0, cmd[4]);
+	printf("Data Sent\n");
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+	leuart_send(LEUART0, cmd[5]);
+	printf("Data Sent\n");
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+	leuart_send(LEUART0, cmd[6]);
+	printf("Data Sent\n");
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+	leuart_send(LEUART0, cmd[7]);
+	printf("Data Sent\n");
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+	leuart_send(LEUART0, cmd[8]);
+	printf("Data Sent\n");
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+}
+
+
+/**
+ * @brief Function to test LEUART0 peripheral in loopback using interrupt mode.
+ * @note This function should be called only after initializing LEUART0 peripheral using leuart_init().
+ * @param void
+ * @return void
+ */
+void leuart_loopback_test_non_blocking(void)
 {
 	const uint8_t cmd[9] = {0x7E, 0x00, 0x07, 0x01, 0x00, 0x2A, 0x02, 0xD8, 0x0F};
 

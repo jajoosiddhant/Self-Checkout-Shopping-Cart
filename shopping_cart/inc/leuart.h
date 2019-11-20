@@ -18,6 +18,7 @@ void leuart_init(void);
 void leuart_send(LEUART_TypeDef *leuart, uint8_t data);
 char leuart_rcv(LEUART_TypeDef *leuart);
 void leuart_loopback_test_blocking(void);
+void leuart_loopback_test_non_blocking(void);
 
 
 
