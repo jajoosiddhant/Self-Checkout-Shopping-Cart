@@ -10,15 +10,16 @@
 #ifndef INC_LEUART_H_
 #define INC_LEUART_H_
 
+#include "em_leuart.h"
 
 
 //Function declarations
-void gpio_init(void);
 void leuart_init(void);
-void send(LEUART_TypeDef *leuart, uint8_t data);
-char rcv(LEUART_TypeDef *leuart);
-void loopback_test_blocking(void);
-void barcode_test_blocking(void);
+void leuart_send(LEUART_TypeDef *leuart, uint8_t data);
+char leuart_rcv(LEUART_TypeDef *leuart);
+void leuart_loopback_test_blocking(void);
+void leuart_loopback_test_non_blocking(void);
+
 
 
 #endif /* INC_LEUART_H_ */

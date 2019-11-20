@@ -1,6 +1,6 @@
 /*
  * @file connection_param.h
- * @brief This file consists of all the connection parameters and macros required for bluetooth connection.
+ * @brief This file consists of all the variables and macros required for bluetooth connection.
  *
  * @author: Siddhant Jajoo.
  * @date 11/16/2019
@@ -12,7 +12,7 @@
 #define INC_CONNECTION_PARAM_H_
 
 
-
+//Macros for Connection Setup
 #define adv_handle					(0)
 #define adv_interval_min			(400)
 #define adv_interval_max			(400)
@@ -26,8 +26,10 @@
 #define con_timeout					(400)
 
 
+//Global Variables for Connection Setup
 uint8_t connection_handle;
 uint8_t bonding_connnection_handle;
+
 
 
 #endif /* INC_CONNECTION_PARAM_H_ */
