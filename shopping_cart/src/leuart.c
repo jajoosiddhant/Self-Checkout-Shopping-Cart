@@ -17,7 +17,9 @@
 #include "inc/external_events.h"
 
 
-static uint8_t count;
+
+char g_data[20] = {0};
+uint8_t i;
 
 /**
  * @brief Interrupt handler for LEUART
@@ -43,9 +45,9 @@ void LEUART0_IRQHandler(void)
 		while (LEUART0->STATUS & LEUART_STATUS_RXDATAV)
 		{
 			// While there is still incoming data
-			char data = leuart_rcv(LEUART0);
-			count++;
-
+			g_data[i] = leuart_rcv(LEUART0);
+			i++;
+			//			printf("Received Data in Interrupt handler: %c\n", data);
 		}
 	}
 
@@ -147,8 +149,7 @@ void leuart_loopback_test_blocking(void)
 	//Disable Interrupts over here in order to support blocking
 	if ((LEUART0->IEN & LEUART_IEN_RXDATAV) || (LEUART0->IEN & LEUART_IEN_TXC))
 	{
-		LEUART_IntEnable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
-		NVIC_DisableIRQ(LEUART0_IRQn);
+		LEUART_IntDisable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
 	}
 
 	leuart_send(LEUART0, cmd[0]);

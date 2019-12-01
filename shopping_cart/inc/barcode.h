@@ -15,6 +15,7 @@
 
 //Function Declarations
 void barcode_test_blocking(void);
+void barcode_test_blocking_scanning(void);
 
 
 #endif /* INC_BARCODE_H_ */

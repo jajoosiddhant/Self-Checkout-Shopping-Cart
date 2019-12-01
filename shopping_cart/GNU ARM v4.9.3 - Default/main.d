@@ -82,7 +82,7 @@ main.o: ../main.c ../init_mcu.h ../board_features.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_core.h \
  ../inc/leuart.h \
  D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_leuart.h \
- ../inc/connection_param.h ../inc/external_events.h
+ ../inc/connection_param.h ../inc/external_events.h ../inc/barcode.h
 
 ../init_mcu.h:
 
@@ -261,3 +261,5 @@ D:\LPEDT\Git\Self-Checkout-Shopping-Cart\shopping_cart\platform\emlib\inc/em_leu
 ../inc/connection_param.h:
 
 ../inc/external_events.h:
+
+../inc/barcode.h:

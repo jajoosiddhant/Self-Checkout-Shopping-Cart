@@ -15,6 +15,8 @@
 
 
 
+
+//Output should be 2,0,0,2,39,1,SS,SS where SS is checksum value and varies as per the data packet.
 void barcode_test_blocking(void)
 {
 	const uint8_t cmd[9] = {0x7E, 0x00, 0x07, 0x01, 0x00, 0x2A, 0x02, 0xD8, 0x0F};
@@ -23,8 +25,7 @@ void barcode_test_blocking(void)
 	//Disable Interrupts over here in order to support blocking
 	if ((LEUART0->IEN & LEUART_IEN_RXDATAV) || (LEUART0->IEN & LEUART_IEN_TXC))
 	{
-		LEUART_IntEnable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
-		NVIC_DisableIRQ(LEUART0_IRQn);
+		LEUART_IntDisable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
 	}
 
 
@@ -49,6 +50,29 @@ void barcode_test_blocking(void)
 
 
 	printf("DATA: %x\n", leuart_rcv(LEUART0));
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+	printf("DATA: %x\n", leuart_rcv(LEUART0));
+
+}
+
+
+void barcode_test_blocking_scanning(void)
+{
+
+	//Disable Interrupts over here in order to support blocking
+	if ((LEUART0->IEN & LEUART_IEN_RXDATAV) || (LEUART0->IEN & LEUART_IEN_TXC))
+	{
+		LEUART_IntDisable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
+	}
+
+
+	printf("Testing Barcode UART by scanning the barcode.\n");
+
 	printf("DATA: %x\n", leuart_rcv(LEUART0));
 	printf("DATA: %x\n", leuart_rcv(LEUART0));
 	printf("DATA: %x\n", leuart_rcv(LEUART0));

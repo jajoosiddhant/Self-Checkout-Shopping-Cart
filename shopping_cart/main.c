@@ -54,6 +54,7 @@
 #include "inc/leuart.h"
 #include "inc/connection_param.h"
 #include "inc/external_events.h"
+#include "inc/barcode.h"
 
 
 
@@ -82,7 +83,7 @@ uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 static gecko_configuration_t config = {
   .config_flags = 0,                                   /* Check flag options from UG136 */
 #if defined(FEATURE_LFXO)
-  .sleep.flags = SLEEP_FLAGS_DEEP_SLEEP_ENABLE,        /* Sleep is enabled */
+  .sleep.flags = 3, //SLEEP_FLAGS_DEEP_SLEEP_ENABLE,        /* Sleep is enabled */
 #else
   .sleep.flags = 0,
 #endif // LFXO
@@ -143,6 +144,8 @@ int main(void)
   printf("Self Checkout Shopping Cart.\n");
   printf("Team Name: Ashwathama.\n");
 
+  //Initializing Circular Buffer
+  memset();
   while (1)
   {
 	  struct gecko_cmd_packet *evt = gecko_wait_event();
@@ -165,6 +168,9 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 		//Set up Bluetooth connection parameters and start advertising.
 		bt_connection_init();
+		leuart_init();
+		//barcode_test_blocking();
+		//barcode_test_blocking_scanning();
 
 		//gecko_cmd_sm_increase_security(connection_handle);
 		break;
@@ -254,15 +260,17 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 
 	case gecko_evt_system_external_signal_id:
-		printf("Event: gecko_evt_system_external_signal_id\n");
+//		printf("Event: gecko_evt_system_external_signal_id\n");
 
 		if (evt->data.evt_system_external_signal.extsignals & LEUART_EVENT)
 		{
-			printf("External Signal Event for LEUART received.\n");
+//			printf("External Signal Event for LEUART received.\n");
 
 			CORE_AtomicDisableIrq();
 			external_event &= ~LEUART_EVENT;
 			CORE_AtomicEnableIrq();
+
+
 
 		}
 		break;
