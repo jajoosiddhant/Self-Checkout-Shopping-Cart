@@ -18,8 +18,26 @@
 
 
 
-char g_data[20] = {0};
-uint8_t i;
+
+/**
+ * @brief This function increments the buffer_interrupt_count variable based on the BUFFER_INTERRUPT_SIZE value.
+ * @param The buffer_interrupt_count value stored in the leuart_circbuff structure
+ * @return void
+
+static uint32_t leuart_circbuff_interrupt_count_test_increment(uint32_t index)		//Can make inline
+{
+	if(index == BUFFER_INTERRUPT_SIZE)
+	{
+		index = 0;
+	}
+	else
+	{
+		index++;
+	}
+
+	return index;
+}
+ */
 
 /**
  * @brief Interrupt handler for LEUART
@@ -38,28 +56,30 @@ void LEUART0_IRQHandler(void)
 	// RX portion of the interrupt handler
 	if (flags & LEUART_IF_RXDATAV)
 	{
-		//Update the External Event
-		external_event |= LEUART_EVENT;
-		gecko_external_signal(external_event);
+
+		//TODO: Need to implement a Software Timer as well here for triggering external event ID.
+		if(leuart_circbuff.buffer_interrupt_count == BUFFER_INTERRUPT_SIZE)
+		{
+			//Update the External Event after every BUFFER_INTERRUPT_SIZE(define in leuart.h) bytes of receiving data
+			external_event |= LEUART_EVENT;
+			gecko_external_signal(external_event);
+			leuart_circbuff.buffer_interrupt_count = 0;
+		}
+		else
+		{
+			leuart_circbuff.buffer_interrupt_count++;
+		}
 
 		while (LEUART0->STATUS & LEUART_STATUS_RXDATAV)
 		{
 			// While there is still incoming data
-			g_data[i] = leuart_rcv(LEUART0);
-			i++;
-			//			printf("Received Data in Interrupt handler: %c\n", data);
+			leuart_circbuff.buffer[leuart_circbuff.write_index] = leuart_rcv(LEUART0);
+
+			//Increment the write index value
+			leuart_circbuff.write_index = leuart_circbuff_index_increment(leuart_circbuff.write_index);
 		}
 	}
 
-/*
- * 	NOT REQUIRED
- *
-	// TX portion of the interrupt handler
-	if (flags & LEUART_IF_TXC)
-	{
-		//printf("Data Transmitted\n");
-	}
-*/
 	//Enable All Interrupts
 	CORE_AtomicEnableIrq();
 }

@@ -12,10 +12,26 @@
 #define INC_BARCODE_H_
 
 
+#define BARCODE_PREAMBLE		(0xAB)
+
+
+//Variable Declarations
+struct barcode_packet
+{
+	uint8_t preamble;
+	uint16_t payload_size;
+	uint8_t cost_size;
+	char* payload;
+	char* payload_cost;
+};
+
+
+struct barcode_packet barcode_packet;
+
 
 //Function Declarations
 void barcode_test_blocking(void);
 void barcode_test_blocking_scanning(void);
-
+void barcode_packet_create(struct barcode_packet* barcode_packet);
 
 #endif /* INC_BARCODE_H_ */

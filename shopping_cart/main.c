@@ -144,8 +144,11 @@ int main(void)
   printf("Self Checkout Shopping Cart.\n");
   printf("Team Name: Ashwathama.\n");
 
-  //Initializing Circular Buffer
-  memset();
+  //Initializing Structures Circular Buffer and Barcode Packet to value 0
+  memset(&leuart_circbuff, 0, sizeof(struct leuart_circbuff));
+  memset(&barcode_packet, 0, sizeof(struct barcode_packet));
+
+
   while (1)
   {
 	  struct gecko_cmd_packet *evt = gecko_wait_event();
@@ -271,7 +274,24 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 			CORE_AtomicEnableIrq();
 
 
+			//TODO: Add a Software Timer for UART Receiving external event trigger.
+			//TODO: Check this if condition 10 times ??? Should not be required because the scanning time for barcode is not that fast.
+			if(leuart_circbuff.buffer[leuart_circbuff.read_index] == BARCODE_PREAMBLE)
+			{
+				uint16_t temp_read_index = leuart_circbuff.read_index + 4;	//+4 as per the packet structure
 
+				//Start making packet here
+				barcode_packet_create(&barcode_packet);
+
+				//TODO: memcpy only when we know all the data has been received in the buffer
+				//NOTE: ADD a postamble and check here if a postamble has been received. If yes then we can memcpy all the data.
+				memcpy(&barcode_packet.payload[0], &leuart_circbuff.buffer[temp_read_index], barcode_packet.payload_size);
+				memcpy(&barcode_packet.payload_cost[0], &leuart_circbuff.buffer[temp_read_index + barcode_packet.payload_size], barcode_packet.cost_size);
+
+
+				//TODO: Check if this loop satisfies every condition.
+				//TODO: Now Start Sending data over bluetooth here.
+			}
 		}
 		break;
 
