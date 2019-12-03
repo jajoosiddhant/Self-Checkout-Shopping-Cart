@@ -25,18 +25,21 @@ struct leuart_circbuff
 	char buffer[BUFFER_MAXSIZE];
 
 	/*The write index for the circular buffer*/
-	uint16_t write_index;
+	uint32_t write_index;
 
 	/*The read index for the circular buffer*/
-	uint16_t read_index;
+	uint32_t read_index;
+
+	/*The current number of elements is stored here*/
+	volatile uint32_t buffer_count;
 
 	/* The buffer count value in order to trigger the gecko_evt_system_external_signal_id event
 	   The event would be triggered when buffer_interrupt_count == BUFFER_INTERRUPT_SIZE */
-	uint32_t buffer_interrupt_count;
+	volatile uint32_t buffer_interrupt_count;
 
 	/*This variable is set true after every BUFFER_INTERRUPT_SIZE bytes are received.
 	  If this flag is true the control would be transferred to gecko_evt_system_external_signal_id event */
-	bool buffer_interrupt_flag;
+	volatile bool buffer_interrupt_flag;
 };
 
 
@@ -47,6 +50,9 @@ struct leuart_circbuff leuart_circbuff;
 void leuart_init(void);
 void leuart_send(LEUART_TypeDef *leuart, uint8_t data);
 char leuart_rcv(LEUART_TypeDef *leuart);
+void leuart_buffer_push();
+char leuart_buffer_pop();
+bool leuart_buffer_empty_status();
 void leuart_loopback_test_blocking(void);
 void leuart_loopback_test_non_blocking(void);
 
@@ -59,7 +65,7 @@ void leuart_loopback_test_non_blocking(void);
  * @param The read or write index value of the circular buffer
  * @return void
  */
-inline uint16_t leuart_circbuff_index_increment(uint16_t index)		//Can make inline
+inline uint32_t leuart_circbuff_index_increment(uint16_t index)		//Can make inline
 {
 	if(index == BUFFER_MAXSIZE - 1)
 	{

@@ -18,22 +18,18 @@
 
 void barcode_packet_create(struct barcode_packet* barcode_packet)
 {
-	//Another method would be to create a local object and then just copy the contents of the local pointer object to the barcode structure object.
-	//Here that method wouold not be required I guess since there is no requirement of synchronization objects
 
-	if(barcode_packet->payload != NULL && barcode_packet->payload_cost != NULL)
+	if(barcode_packet->payload == NULL && barcode_packet->payload_cost == NULL
+										&& leuart_circbuff.read_index < BUFFER_MAXSIZE)
 	{
 		int i;
 
-		barcode_packet->preamble = leuart_circbuff.buffer[leuart_circbuff.read_index];
-		leuart_circbuff_index_increment(leuart_circbuff.read_index);
+		barcode_packet->preamble = leuart_buffer_pop();
 
-		barcode_packet->payload_size = ((uint16_t)leuart_circbuff.buffer[leuart_circbuff.read_index]) |
-				(uint16_t)(leuart_circbuff.buffer[leuart_circbuff_index_increment(leuart_circbuff.read_index)] << 8);
-		leuart_circbuff_index_increment(leuart_circbuff.read_index);
+		barcode_packet->payload_size = ((uint16_t)leuart_buffer_pop()) |
+				(uint16_t)(leuart_buffer_pop() << 8);
 
-		barcode_packet->cost_size = leuart_circbuff.buffer[leuart_circbuff.read_index];
-		leuart_circbuff_index_increment(leuart_circbuff.read_index);
+		barcode_packet->cost_size = leuart_buffer_pop();
 
 		barcode_packet->payload = malloc(sizeof(char) * barcode_packet->payload_size);
 		if(barcode_packet->payload == NULL)
@@ -43,7 +39,7 @@ void barcode_packet_create(struct barcode_packet* barcode_packet)
 		//Increment Read Pointer here
 		for(i = 0; i < barcode_packet->payload_size; i++)
 		{
-			leuart_circbuff_index_increment(leuart_circbuff.read_index);
+			leuart_buffer_pop();
 		}
 
 		barcode_packet->payload_cost = malloc(sizeof(char) * barcode_packet->cost_size);
@@ -54,7 +50,7 @@ void barcode_packet_create(struct barcode_packet* barcode_packet)
 		//Increment Read Pointer here
 		for(i = 0; i < barcode_packet->cost_size; i++)
 		{
-			leuart_circbuff_index_increment(leuart_circbuff.read_index);
+			leuart_buffer_pop();
 		}
 
 	}

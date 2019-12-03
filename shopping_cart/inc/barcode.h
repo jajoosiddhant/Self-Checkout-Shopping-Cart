@@ -13,7 +13,7 @@
 
 
 #define BARCODE_PREAMBLE		(0xAB)
-
+#define BARCODE_POSTAMBLE		(0xBA)
 
 //Variable Declarations
 struct barcode_packet

@@ -73,10 +73,7 @@ void LEUART0_IRQHandler(void)
 		while (LEUART0->STATUS & LEUART_STATUS_RXDATAV)
 		{
 			// While there is still incoming data
-			leuart_circbuff.buffer[leuart_circbuff.write_index] = leuart_rcv(LEUART0);
-
-			//Increment the write index value
-			leuart_circbuff.write_index = leuart_circbuff_index_increment(leuart_circbuff.write_index);
+			leuart_buffer_push();
 		}
 	}
 
@@ -154,6 +151,71 @@ char leuart_rcv(LEUART_TypeDef *leuart)
 {
 	return LEUART_Rx(leuart);
 }
+
+
+/**
+ * @brief This function pushes the data received over UART into the Circular Buffer. i.e leuart_circbuff
+ * @note This function must be enclosed in CORE_AtomicDisableIrq() and CORE_AtomicEnableIrq();
+ * @param void
+ * @return void
+ */
+void leuart_buffer_push(void)
+{
+	if(leuart_circbuff.write_index < BUFFER_MAXSIZE)
+	{
+		//Save UART register data into the circular buffer
+		leuart_circbuff.buffer[leuart_circbuff.write_index] = leuart_rcv(LEUART0);
+
+		//Increment the write index value
+		leuart_circbuff.write_index = leuart_circbuff_index_increment(leuart_circbuff.write_index);
+
+		//Incrementing the buffer count variable if the buffer is not full or else keeping it the same i.e the maximum value here according to the if loop.
+		if(leuart_circbuff.buffer_count < BUFFER_MAXSIZE)
+		{
+			leuart_circbuff.buffer_count++;
+		}
+	}
+}
+
+
+
+/**
+ * @brief This function pops and returns the data from the Circular Buffer. i.e leuart_circbuff
+ * @param void
+ * @return Data from the circular buffer using the read_index. -1 signifies no valid data present
+ */
+char leuart_buffer_pop(void)
+{
+	if((leuart_circbuff.read_index < BUFFER_MAXSIZE) && (leuart_circbuff.buffer_count > 0))
+	{
+		uint32_t temp_read_index = leuart_circbuff.read_index;
+
+		//Increment the write index value
+		leuart_circbuff.read_index = leuart_circbuff_index_increment(leuart_circbuff.read_index);
+
+		//Decrementing the buffer count variable if the buffer is not empty.
+		CORE_AtomicDisableIrq();
+		leuart_circbuff.buffer_count--;
+		CORE_AtomicEnableIrq();
+
+		return leuart_circbuff.buffer[temp_read_index];
+	}
+
+	//TODO: Check return value here with datatype of the function
+	return -1;
+}
+
+
+bool leuart_buffer_empty_status(void)
+{
+	if(leuart_circbuff.buffer_count == 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 
 
 /**
