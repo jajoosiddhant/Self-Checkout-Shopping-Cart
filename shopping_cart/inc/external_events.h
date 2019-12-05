@@ -13,7 +13,7 @@
 
 
 //Event Bits assigned to different Signal Events
-#define LEUART_EVENT			(0x01)
+#define EVENT_LEUART						(0x01)
 
 
 //Global Variable for Event Status

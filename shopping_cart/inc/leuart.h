@@ -14,15 +14,16 @@
 #include "em_leuart.h"
 
 
-#define BUFFER_MAXSIZE					(512)
-#define BUFFER_INTERRUPT_SIZE			(10)
+#define LEUART_BUFFER_MAXSIZE					(512)
+#define LEUART_BUFFER_INTERRUPT_SIZE			(10)
+#define LEUART_INTERRUPT_TIMER					(1)
 
 
 //Variable Declaration
 struct leuart_circbuff
 {
 	/* A circular buffer of size 512 bytes to store the contents of the data received from the UART register*/
-	char buffer[BUFFER_MAXSIZE];
+	char buffer[LEUART_BUFFER_MAXSIZE];
 
 	/*The write index for the circular buffer*/
 	uint32_t write_index;
@@ -65,9 +66,9 @@ void leuart_loopback_test_non_blocking(void);
  * @param The read or write index value of the circular buffer
  * @return void
  */
-inline uint32_t leuart_circbuff_index_increment(uint16_t index)		//Can make inline
+inline uint32_t leuart_circbuff_index_increment(uint32_t index)		//Can make inline
 {
-	if(index == BUFFER_MAXSIZE - 1)
+	if(index == LEUART_BUFFER_MAXSIZE - 1)
 	{
 		index = 0;
 	}

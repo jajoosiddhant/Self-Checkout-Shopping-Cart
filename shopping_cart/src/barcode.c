@@ -16,42 +16,62 @@
 
 
 
-void barcode_packet_create(struct barcode_packet* barcode_packet)
+static int barcode_payload_size_fetch(struct barcode_packet* barcode_packet)
+{
+	int payload_size = 0;
+
+	barcode_packet->payload_size[0] = leuart_buffer_pop();
+	barcode_packet->payload_size[1] = leuart_buffer_pop();
+	barcode_packet->payload_size[2] = leuart_buffer_pop();
+
+	payload_size += (barcode_packet->payload_size[0] - ASCII_DIGIT_START) * 100;
+	payload_size += (barcode_packet->payload_size[1] - ASCII_DIGIT_START) * 10;
+	payload_size += (barcode_packet->payload_size[2] - ASCII_DIGIT_START) * 1;
+
+	return payload_size;
+
+}
+
+static int barcode_cost_fetch(struct barcode_packet* barcode_packet)
+{
+	int cost = 0;
+
+	barcode_packet->cost[0] = leuart_buffer_pop();
+	barcode_packet->cost[1] = leuart_buffer_pop();
+	barcode_packet->cost[2] = leuart_buffer_pop();
+
+	cost += (barcode_packet->cost[0] - ASCII_DIGIT_START) * 100;
+	cost += (barcode_packet->cost[1] - ASCII_DIGIT_START) * 10;
+	cost += (barcode_packet->cost[2] - ASCII_DIGIT_START) * 1;
+
+	return cost;
+}
+
+
+//Payload_size might need change depending on what needs to be sent to the android application
+void barcode_packet_create(struct barcode_packet* barcode_packet, int *payload_size)
 {
 
-	if(barcode_packet->payload == NULL && barcode_packet->payload_cost == NULL
-										&& leuart_circbuff.read_index < BUFFER_MAXSIZE)
+	if( barcode_packet->payload == NULL && leuart_circbuff.read_index < LEUART_BUFFER_MAXSIZE)
 	{
-		int i;
+		int local_payload_size, cost;
 
 		barcode_packet->preamble = leuart_buffer_pop();
 
-		barcode_packet->payload_size = ((uint16_t)leuart_buffer_pop()) |
-				(uint16_t)(leuart_buffer_pop() << 8);
+		//Fetching and converting the character data of Payload size and Cost size here into interger digits.
+		local_payload_size = barcode_payload_size_fetch(barcode_packet);
+		printf("Payload_size: %d\n", local_payload_size);
 
-		barcode_packet->cost_size = leuart_buffer_pop();
+		cost = barcode_cost_fetch(barcode_packet);
+		printf("Cost: %d\n", cost);
 
-		barcode_packet->payload = malloc(sizeof(char) * barcode_packet->payload_size);
+		barcode_packet->payload = malloc(sizeof(char) * local_payload_size);
 		if(barcode_packet->payload == NULL)
 		{
 			printf("ERROR: Cannot Malloc Payload data in barcode_packet_create() function./n");
 		}
-		//Increment Read Pointer here
-		for(i = 0; i < barcode_packet->payload_size; i++)
-		{
-			leuart_buffer_pop();
-		}
 
-		barcode_packet->payload_cost = malloc(sizeof(char) * barcode_packet->cost_size);
-		if(barcode_packet->payload_cost == NULL)
-		{
-			printf("ERROR: Cannot Malloc Payload Cost data in barcode_packet_create() function./n");
-		}
-		//Increment Read Pointer here
-		for(i = 0; i < barcode_packet->cost_size; i++)
-		{
-			leuart_buffer_pop();
-		}
+		*payload_size = local_payload_size;
 
 	}
 }

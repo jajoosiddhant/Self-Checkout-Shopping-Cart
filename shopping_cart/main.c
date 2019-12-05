@@ -49,6 +49,7 @@
 #include "retargetserial.h"
 #include "em_core.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 //Custom header files in INC directory
 #include "inc/leuart.h"
@@ -57,8 +58,11 @@
 #include "inc/barcode.h"
 
 
-
-#define CART_DEBUG_PRINTS	(1)		//Comment this line to remove debug prints
+#define TIMER_CLK_FREQ 							((uint32)32768)				/* Timer Clock Frequency */
+#define TIMER_S_TO_TICKS(s)						(TIMER_CLK_FREQ * s)		/* Convert seconds to timer ticks */
+#define SOFT_TIMER_LEUART_INTERRUPT				(55)
+#define CART_DEBUG_PRINTS						(1)							/* Comment this line to remove
+																				debug prints */
 
 #ifdef CART_DEBUG_PRINTS
 	#define printf(fmt, args...) printf(fmt, ## args)
@@ -148,6 +152,9 @@ int main(void)
   memset(&leuart_circbuff, 0, sizeof(struct leuart_circbuff));
   memset(&barcode_packet, 0, sizeof(struct barcode_packet));
 
+  //Starting Software Timer for leuart interrupts.
+  //gecko_cmd_hardware_set_soft_timer(TIMER_S_TO_TICKS(1), SOFT_TIMER_LEUART_INTERRUPT, 0);
+
 
   while (1)
   {
@@ -172,8 +179,6 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 		//Set up Bluetooth connection parameters and start advertising.
 		bt_connection_init();
 		leuart_init();
-		//barcode_test_blocking();
-		//barcode_test_blocking_scanning();
 
 		//gecko_cmd_sm_increase_security(connection_handle);
 		break;
@@ -195,7 +200,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 		/*Configure Connection Parameters*/
 		gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection,
-												CON_INTERVAL_MIN,CON_INTERVAL_MAX,CON_LATENCY,CON_TIMEOUT);
+													CON_INTERVAL_MIN,CON_INTERVAL_MAX,CON_LATENCY,CON_TIMEOUT);
 		connection_handle = evt->data.evt_le_connection_opened.connection;
 
 		//gecko_cmd_sm_increase_security(connection_handle);
@@ -221,14 +226,16 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 		break;
 
+
 	case gecko_evt_sm_confirm_bonding_id:
 		printf("Event: gecko_evt_sm_confirm_bonding_id\n");
 		bonding_connnection_handle = evt->data.evt_sm_confirm_bonding.connection;
 		struct gecko_msg_sm_bonding_confirm_rsp_t* results;
 		results = gecko_cmd_sm_bonding_confirm(bonding_connnection_handle, 1);
-		printf("Result Bonding: %d",results->result);
+		printf("Result Bonding: %d\n",results->result);
 
 		break;
+
 
 	case gecko_evt_sm_bonded_id:
 		printf("Event: gecko_evt_sm_bonded_id\n");
@@ -238,7 +245,6 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 	case gecko_evt_sm_bonding_failed_id:
 		printf("Event: gecko_evt_sm_bonding_failed_id\n");
 		break;
-
 
 
 	case gecko_evt_le_connection_closed_id:
@@ -262,43 +268,73 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 		break;
 
 
+	case gecko_evt_hardware_soft_timer_id:
+		switch (evt->data.evt_hardware_soft_timer.handle){
+
+		case SOFT_TIMER_LEUART_INTERRUPT:
+			if(!leuart_buffer_empty_status())
+			{
+				CORE_AtomicDisableIrq();
+				external_event |= EVENT_LEUART;
+				gecko_external_signal(external_event);
+				CORE_AtomicEnableIrq();
+			}
+			break;
+		}
+		break;
+
+
 	case gecko_evt_system_external_signal_id:
 //		printf("Event: gecko_evt_system_external_signal_id\n");
 
-		if (evt->data.evt_system_external_signal.extsignals & LEUART_EVENT)
+//		TODO: Disable interrupts for the entire block
+		if (evt->data.evt_system_external_signal.extsignals & EVENT_LEUART)
 		{
 //			printf("External Signal Event for LEUART received.\n");
 
 			CORE_AtomicDisableIrq();
-			external_event &= ~LEUART_EVENT;
+			external_event &= ~EVENT_LEUART;
 			CORE_AtomicEnableIrq();
 
+			//Initial data - Not necessary to initialize
+			uint32_t temp_read_index = leuart_circbuff.read_index;
+			int payload_size = 0;																/* Payload_size might need change depending on what
+																									needs to be sent to the android application */
+
+			//Read data from leuart_circbuff till it is empty
 			while(!leuart_buffer_empty_status())
 			{
+
 				//TODO: Add a Software Timer for UART Receiving external event trigger.
 				//TODO: Check this if condition 10 times ??? Should not be required because the scanning time for barcode is not that fast.
 				if(leuart_circbuff.buffer[leuart_circbuff.read_index] == BARCODE_PREAMBLE)
 				{
-					uint16_t temp_read_index = leuart_circbuff.read_index + 4;	//+4 as per the packet structure
+//					printf("Inside if loop external event\n");
+					temp_read_index = leuart_circbuff.read_index + 7;							/* 7 as per the packet structure */
 
 					//Start making packet here
-					//TODO: This should be enclosed by CORE_AtomicDisableIrq() and CORE_AtomicEnableIrq()
-					barcode_packet_create(&barcode_packet);
-
-					//TODO: memcpy only when we know all the data has been received in the buffer
-					//TODO: ADD a postamble and check here if a postamble has been received. If yes then we can memcpy all the data.
-					//TODO: Disable and Enable interrupts when copying data from leuart_circbuff to barcode_packet.
-					memcpy(&barcode_packet.payload[0], &leuart_circbuff.buffer[temp_read_index], barcode_packet.payload_size);
-					memcpy(&barcode_packet.payload_cost[0], &leuart_circbuff.buffer[temp_read_index + barcode_packet.payload_size], barcode_packet.cost_size);
-
+					barcode_packet_create(&barcode_packet, &payload_size);
 
 					//TODO: Check if this loop satisfies every condition.
-					//TODO: Now Start Sending data over bluetooth here.
-					//TODO: Free the data structure after sending data.
 				}
 				else if(leuart_circbuff.buffer[leuart_circbuff.read_index] == BARCODE_POSTAMBLE)
 				{
-					//TODO: memcpy over here.
+					//Disable and Enable interrupts when copying data from leuart_circbuff to barcode_packet.
+					barcode_packet.postamble = leuart_buffer_pop();
+					leuart_buffer_pop();														/* To remove the redundant \r received from the barcode*/
+					memcpy(&barcode_packet.payload[0], &leuart_circbuff.buffer[temp_read_index], payload_size);
+
+
+					//TODO: Now Start Sending data over bluetooth here.
+					//TODO: Free the barcode_packet data structure after sending data.
+					free(barcode_packet.payload);
+					//TODO: Memset the barcode_packet data structure to zero.
+					memset(&barcode_packet, 0, sizeof(struct barcode_packet));
+
+				}
+				else
+				{
+					leuart_buffer_pop();														/* To pop remaining data*/
 				}
 			}
 		}
@@ -334,7 +370,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 
 /**
- * @brief This function prints the Server Bluetooth Publuc address
+ * @brief This function prints the Server Bluetooth Public address
  * @param void
  * @return void
  */

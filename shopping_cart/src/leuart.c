@@ -58,10 +58,10 @@ void LEUART0_IRQHandler(void)
 	{
 
 		//TODO: Need to implement a Software Timer as well here for triggering external event ID.
-		if(leuart_circbuff.buffer_interrupt_count == BUFFER_INTERRUPT_SIZE)
+		if(leuart_circbuff.buffer_interrupt_count == LEUART_BUFFER_INTERRUPT_SIZE)
 		{
 			//Update the External Event after every BUFFER_INTERRUPT_SIZE(define in leuart.h) bytes of receiving data
-			external_event |= LEUART_EVENT;
+			external_event |= EVENT_LEUART;
 			gecko_external_signal(external_event);
 			leuart_circbuff.buffer_interrupt_count = 0;
 		}
@@ -73,7 +73,11 @@ void LEUART0_IRQHandler(void)
 		while (LEUART0->STATUS & LEUART_STATUS_RXDATAV)
 		{
 			// While there is still incoming data
-			leuart_buffer_push();
+			if(leuart_circbuff.buffer_count != LEUART_BUFFER_MAXSIZE)					/* Push data only if buffer is not full. This will prevent overwriting of old data
+			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 by the new data. Preference is given to the old data and not the new data */
+			{
+				leuart_buffer_push();
+			}
 		}
 	}
 
@@ -93,8 +97,8 @@ static void leuart_gpio_init(void)
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
 	// Initialize LEUART0 TX and RX pins
-	GPIO_PinModeSet(gpioPortD, 10, gpioModePushPull, 1); 	// TX (Pin Number 7)
-	GPIO_PinModeSet(gpioPortD, 11, gpioModeInputPull, 1);   // RX (Pin Number 9)
+	GPIO_PinModeSet(gpioPortD, 10, gpioModePushPull, 1); 								/* TX (Pin Number 7) */
+	GPIO_PinModeSet(gpioPortD, 11, gpioModeInputPull, 1);   							/* RX (Pin Number 9) */
 }
 
 
@@ -110,7 +114,7 @@ void leuart_init(void)
 
 	// Enable clocks for LEUART0
 	CMU_ClockEnable(cmuClock_LEUART0, true);
-	CMU_ClockDivSet(cmuClock_LEUART0, cmuClkDiv_1); // Don't prescale LEUART clock
+	CMU_ClockDivSet(cmuClock_LEUART0, cmuClkDiv_1); 									/* Don't prescale LEUART clock */
 
 	// Initialize the LEUART0 module
 	LEUART_Init_TypeDef init = LEUART_INIT_DEFAULT;
@@ -155,13 +159,13 @@ char leuart_rcv(LEUART_TypeDef *leuart)
 
 /**
  * @brief This function pushes the data received over UART into the Circular Buffer. i.e leuart_circbuff
- * @note This function must be enclosed in CORE_AtomicDisableIrq() and CORE_AtomicEnableIrq();
+ * @note This function must be enclosed in CORE_AtomicDisableIrq() and CORE_AtomicEnableIrq().
  * @param void
  * @return void
  */
 void leuart_buffer_push(void)
 {
-	if(leuart_circbuff.write_index < BUFFER_MAXSIZE)
+	if(leuart_circbuff.write_index < LEUART_BUFFER_MAXSIZE)
 	{
 		//Save UART register data into the circular buffer
 		leuart_circbuff.buffer[leuart_circbuff.write_index] = leuart_rcv(LEUART0);
@@ -170,7 +174,7 @@ void leuart_buffer_push(void)
 		leuart_circbuff.write_index = leuart_circbuff_index_increment(leuart_circbuff.write_index);
 
 		//Incrementing the buffer count variable if the buffer is not full or else keeping it the same i.e the maximum value here according to the if loop.
-		if(leuart_circbuff.buffer_count < BUFFER_MAXSIZE)
+		if(leuart_circbuff.buffer_count < LEUART_BUFFER_MAXSIZE)
 		{
 			leuart_circbuff.buffer_count++;
 		}
@@ -181,12 +185,13 @@ void leuart_buffer_push(void)
 
 /**
  * @brief This function pops and returns the data from the Circular Buffer. i.e leuart_circbuff
+ * @note This function must be enclosed in CORE_AtomicDisableIrq() and CORE_AtomicEnableIrq()
  * @param void
  * @return Data from the circular buffer using the read_index. -1 signifies no valid data present
  */
 char leuart_buffer_pop(void)
 {
-	if((leuart_circbuff.read_index < BUFFER_MAXSIZE) && (leuart_circbuff.buffer_count > 0))
+	if((leuart_circbuff.read_index < LEUART_BUFFER_MAXSIZE) && (leuart_circbuff.buffer_count > 0))
 	{
 		uint32_t temp_read_index = leuart_circbuff.read_index;
 
@@ -194,10 +199,9 @@ char leuart_buffer_pop(void)
 		leuart_circbuff.read_index = leuart_circbuff_index_increment(leuart_circbuff.read_index);
 
 		//Decrementing the buffer count variable if the buffer is not empty.
-		CORE_AtomicDisableIrq();
 		leuart_circbuff.buffer_count--;
-		CORE_AtomicEnableIrq();
 
+		printf("POP: %c\n", leuart_circbuff.buffer[temp_read_index]);
 		return leuart_circbuff.buffer[temp_read_index];
 	}
 

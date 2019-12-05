@@ -12,17 +12,32 @@
 #define INC_BARCODE_H_
 
 
-#define BARCODE_PREAMBLE		(0xAB)
-#define BARCODE_POSTAMBLE		(0xBA)
+#define BARCODE_PREAMBLE		(126)		/* Ascii equivalent of ~ */
+#define BARCODE_POSTAMBLE		(96)		/* Ascii equivalent of \ */
+#define ASCII_DIGIT_START		(48)		/* Ascii Value for interger 0 */
+
+
 
 //Variable Declarations
-struct barcode_packet
+struct barcode_packet									/* Example Packet data to send enclosed in the barcode scanner : ~013046shopping_cart`
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 ~ = preamble; 013 = payload_size; 046 = cost; payload = shopping_cart; ` = postamble*/
 {
+	/* Preamble signifies the start of packet*/
 	uint8_t preamble;
-	uint16_t payload_size;
-	uint8_t cost_size;
+
+	/* The Payload size i.e The name size of the product embedded in the barcode. The maximum name size here
+	 * can be of 999 characters*/
+	uint8_t payload_size[3];
+
+	/* The Cost size of the product. The maximum cost value a product can have here is 999*/
+	uint8_t cost[3];
+
+	/* The payload data pointer containg the payload data string*/
 	char* payload;
-	char* payload_cost;
+
+	/* Postamble signifies the end of data packet*/
+	uint8_t postamble;
+
 };
 
 
@@ -32,6 +47,7 @@ struct barcode_packet barcode_packet;
 //Function Declarations
 void barcode_test_blocking(void);
 void barcode_test_blocking_scanning(void);
-void barcode_packet_create(struct barcode_packet* barcode_packet);
+void barcode_packet_create(struct barcode_packet* barcode_packet, int * payload_size);
+
 
 #endif /* INC_BARCODE_H_ */
