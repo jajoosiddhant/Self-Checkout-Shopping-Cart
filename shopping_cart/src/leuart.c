@@ -145,6 +145,8 @@ void leuart_buffer_push(void)
 
 /**
  * @brief This function pops and returns the data from the Circular Buffer. i.e leuart_circbuff
+ * @note The function return -1 when the buffer is empty. The received data needs to be typecasted to a signed integer
+ * to print the -1 value.
  * @param void
  * @return Data from the circular buffer using the read_index. -1 signifies no valid data present
  */
