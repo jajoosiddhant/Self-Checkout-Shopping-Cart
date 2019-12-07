@@ -44,18 +44,41 @@ struct leuart_circbuff
 };
 
 
-struct leuart_circbuff leuart_circbuff;
+struct leuart_circbuff leuart_circbuff;					/* Only one instance of leuart buffer since
+															there is only one leuart peripheral available i.e LEUART0*/
 
 
 //Function declarations
 void leuart_init(void);
-void leuart_send(LEUART_TypeDef *leuart, uint8_t data);
-char leuart_rcv(LEUART_TypeDef *leuart);
-void leuart_buffer_push();
-char leuart_buffer_pop();
-bool leuart_buffer_empty_status();
+void leuart_buffer_push(void);
+char leuart_buffer_pop(void);
+bool leuart_buffer_empty_status(void);
 void leuart_loopback_test_blocking(void);
 void leuart_loopback_test_non_blocking(void);
+
+
+/**
+ * @brief Function to send data using LEUART peripheral.
+ * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
+ * @param uint8_data 8 bit data to be sent.
+ * @return void
+ */
+inline void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
+{
+	uint8_t tx_data = data;
+	LEUART_Tx(leuart, tx_data);
+}
+
+
+/**
+ * @brief Function to receive data using LEUART Peripheral.
+ * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
+ * @return void
+ */
+inline char leuart_rcv(LEUART_TypeDef *leuart)
+{
+	return LEUART_Rx(leuart);
+}
 
 
 /**
@@ -66,7 +89,7 @@ void leuart_loopback_test_non_blocking(void);
  * @param The read or write index value of the circular buffer
  * @return void
  */
-inline uint32_t leuart_circbuff_index_increment(uint32_t index)		//Can make inline
+inline uint32_t leuart_circbuff_index_increment(uint32_t index)
 {
 	if(index == LEUART_BUFFER_MAXSIZE - 1)
 	{

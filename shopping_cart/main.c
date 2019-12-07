@@ -301,7 +301,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 			int payload_size = 0;																/* Payload_size might need change depending on what
 																									needs to be sent to the android application */
 
-			//Read data from leuart_circbuff till it is empty
+			/* Read data from leuart_circbuff till it is empty */
 			while(!leuart_buffer_empty_status())
 			{
 
@@ -312,23 +312,25 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 //					printf("Inside if loop external event\n");
 					temp_read_index = leuart_circbuff.read_index + 7;							/* 7 as per the packet structure */
 
-					//Start making packet here
+					/* Start making packet here */
 					barcode_packet_create(&barcode_packet, &payload_size);
 
 					//TODO: Check if this loop satisfies every condition.
 				}
 				else if(leuart_circbuff.buffer[leuart_circbuff.read_index] == BARCODE_POSTAMBLE)
 				{
-					//Disable and Enable interrupts when copying data from leuart_circbuff to barcode_packet.
+					/* Disable and Enable interrupts when copying data from leuart_circbuff to barcode_packet */
 					barcode_packet.postamble = leuart_buffer_pop();
 					leuart_buffer_pop();														/* To remove the redundant \r received from the barcode*/
 					memcpy(&barcode_packet.payload[0], &leuart_circbuff.buffer[temp_read_index], payload_size);
 
 
 					//TODO: Now Start Sending data over bluetooth here.
-					//TODO: Free the barcode_packet data structure after sending data.
+
+					/* Free the barcode_packet data structure after sending data */
 					free(barcode_packet.payload);
-					//TODO: Memset the barcode_packet data structure to zero.
+
+					/* Initializing the barcode_packet data structure to zero */
 					memset(&barcode_packet, 0, sizeof(struct barcode_packet));
 
 				}

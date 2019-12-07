@@ -20,24 +20,21 @@
 
 
 /**
- * @brief This function increments the buffer_interrupt_count variable based on the BUFFER_INTERRUPT_SIZE value.
- * @param The buffer_interrupt_count value stored in the leuart_circbuff structure
+ * @brief Function to initialize the GPIO pins required for LEUART.
+ * @param void
  * @return void
-
-static uint32_t leuart_circbuff_interrupt_count_test_increment(uint32_t index)		//Can make inline
-{
-	if(index == BUFFER_INTERRUPT_SIZE)
-	{
-		index = 0;
-	}
-	else
-	{
-		index++;
-	}
-
-	return index;
-}
  */
+static void leuart_gpio_init(void)
+{
+	// GPIO clock
+	CMU_ClockEnable(cmuClock_GPIO, true);
+
+	// Initialize LEUART0 TX and RX pins
+	GPIO_PinModeSet(gpioPortD, 10, gpioModePushPull, 1); 								/* TX (Pin Number 7) */
+	GPIO_PinModeSet(gpioPortD, 11, gpioModeInputPull, 1);   							/* RX (Pin Number 9) */
+}
+
+
 
 /**
  * @brief Interrupt handler for LEUART
@@ -86,20 +83,6 @@ void LEUART0_IRQHandler(void)
 }
 
 
-/**
- * @brief Function to initialize the GPIO pins required for LEUART.
- * @param void
- * @return void
- */
-static void leuart_gpio_init(void)
-{
-	// GPIO clock
-	CMU_ClockEnable(cmuClock_GPIO, true);
-
-	// Initialize LEUART0 TX and RX pins
-	GPIO_PinModeSet(gpioPortD, 10, gpioModePushPull, 1); 								/* TX (Pin Number 7) */
-	GPIO_PinModeSet(gpioPortD, 11, gpioModeInputPull, 1);   							/* RX (Pin Number 9) */
-}
 
 
 /**
@@ -126,35 +109,12 @@ void leuart_init(void)
 	LEUART0->ROUTELOC0 |= (LEUART0->ROUTELOC0 & (~_LEUART_ROUTELOC0_TXLOC_MASK)) | LEUART_ROUTELOC0_TXLOC_LOC18;
 	LEUART0->ROUTELOC0 |= (LEUART0->ROUTELOC0 & (~_LEUART_ROUTELOC0_RXLOC_MASK)) | LEUART_ROUTELOC0_RXLOC_LOC18;
 
-	// Enable LEUART0 RX/TX interrupts
+	// Enable LEUART0 RX interrupts
 	LEUART_IntEnable(LEUART0, LEUART_IEN_RXDATAV);
-	//LEUART_IntEnable(LEUART0, LEUART_IEN_TXC);
 	NVIC_EnableIRQ(LEUART0_IRQn);
 }
 
 
-/**
- * @brief Function to send data using LEUART peripheral.
- * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
- * @param uint8_data 8 bit data to be sent.
- * @return void
- */
-void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
-{
-	uint8_t tx_data = data;
-	LEUART_Tx(leuart, tx_data);
-}
-
-
-/**
- * @brief Function to receive data using LEUART Peripheral.
- * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
- * @return void
- */
-char leuart_rcv(LEUART_TypeDef *leuart)
-{
-	return LEUART_Rx(leuart);
-}
 
 
 /**
