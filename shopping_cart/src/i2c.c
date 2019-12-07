@@ -7,12 +7,9 @@
  * @copyright Copyright (c) 2019
  *
  */
-#include "em_i2c.h"
-#include "src/i2c.h"
-#include "src/sleep.h"
-#include "sleep.h"
 
-#include "src/gpio.h"
+#include "src/i2c.h"
+
 
 /**
  * @brief This function is used to initialize I2C0 peripheral.

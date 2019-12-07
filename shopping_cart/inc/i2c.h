@@ -7,8 +7,10 @@
  * @copyright Copyright (c) 2019
  *
  */
-#include "em_i2c.h"
 #include <stdint.h>
+#include "em_i2c.h"
+#include "src/gpio.h"
+#include "em_core.h"
 
 
 #define NXP_NTAG_R (0x05) //NXP NTAG NFC Read Command
