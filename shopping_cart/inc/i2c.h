@@ -21,7 +21,6 @@
 void i2cinit(void);
 void i2c_write_poll(uint8_t,uint8_t *);
 void i2cdisable(void);
-void delay(void);
 uint8_t* i2c_read_poll(uint8_t);
 uint8_t read_session_poll(uint8_t);
 

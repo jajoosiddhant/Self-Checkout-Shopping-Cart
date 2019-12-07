@@ -10,7 +10,15 @@
 
 #include "src/i2c.h"
 
-
+/**
+ * @brief Delay function used to add additional delays required in I2C Initialization.
+ * @param None
+ *
+ */
+static inline void delay(void)
+{
+	for(int i=0; i<1000000; i++);
+}
 /**
  * @brief This function is used to initialize I2C0 peripheral.
  * PortC 10 SCL, PortC 11 SDA is used.
@@ -345,7 +353,7 @@ uint8_t* i2c_read_poll(uint8_t register_address)
 /**
  * @brief This function is used to disable the I2C peripheral.
  * @param None
- *
+ * @return None
  */
 void i2cdisable()
 {
@@ -359,6 +367,8 @@ void i2cdisable()
 
 /**
  * @brief- IRQ Handler for I2C0 Peripheral
+ * @param- None
+ * @return- None
  */
 void I2C0_IRQHandler()
 {
@@ -378,9 +388,9 @@ void I2C0_IRQHandler()
 /**
  * @brief Delay function used to add additional delays required in I2C Initialization.
  * @param None
- *
+ * @return None
  */
-void delay(void)
+static void inline delay(void)
 {
 	for(int i=0; i<1000000; i++);
 }
