@@ -19,7 +19,7 @@
 #define LEUART_INTERRUPT_TIMER					(1)
 
 
-//Variable Declaration
+/* Variable Declaration */
 struct leuart_circbuff
 {
 	/* A circular buffer of size 512 bytes to store the contents of the data received from the UART register*/
@@ -48,7 +48,7 @@ struct leuart_circbuff leuart_circbuff;					/* Only one instance of leuart buffe
 															there is only one leuart peripheral available i.e LEUART0*/
 
 
-//Function declarations
+/* Function declarations */
 void leuart_init(void);
 void leuart_buffer_push(void);
 char leuart_buffer_pop(void);
@@ -73,7 +73,7 @@ inline void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
 /**
  * @brief Function to receive data using LEUART Peripheral.
  * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
- * @return void
+ * @return data
  */
 inline char leuart_rcv(LEUART_TypeDef *leuart)
 {

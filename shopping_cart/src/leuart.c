@@ -26,10 +26,10 @@
  */
 static void leuart_gpio_init(void)
 {
-	// GPIO clock
+	/* GPIO clock */
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
-	// Initialize LEUART0 TX and RX pins
+	/* Initialize LEUART0 TX and RX pins */
 	GPIO_PinModeSet(gpioPortD, 10, gpioModePushPull, 1); 								/* TX (Pin Number 7) */
 	GPIO_PinModeSet(gpioPortD, 11, gpioModeInputPull, 1);   							/* RX (Pin Number 9) */
 }
@@ -43,14 +43,14 @@ static void leuart_gpio_init(void)
  */
 void LEUART0_IRQHandler(void)
 {
-	//Disable All Interrupts
+	/* Disable All Interrupts */
 	CORE_AtomicDisableIrq();
 
-	//Acknowledge and Clear the Interrupt
+	/* Acknowledge and Clear the Interrupt */
 	uint32_t flags = LEUART_IntGet(LEUART0);
 	LEUART_IntClear(LEUART0, LEUART_IF_TXC);
 
-	// RX portion of the interrupt handler
+	/* RX portion of the interrupt handler */
 	if (flags & LEUART_IF_RXDATAV)
 	{
 
@@ -69,7 +69,7 @@ void LEUART0_IRQHandler(void)
 
 		while (LEUART0->STATUS & LEUART_STATUS_RXDATAV)
 		{
-			// While there is still incoming data
+			/*  While there is still incoming data */
 			if(leuart_circbuff.buffer_count != LEUART_BUFFER_MAXSIZE)					/* Push data only if buffer is not full. This will prevent overwriting of old data
 			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 by the new data. Preference is given to the old data and not the new data */
 			{
@@ -78,7 +78,7 @@ void LEUART0_IRQHandler(void)
 		}
 	}
 
-	//Enable All Interrupts
+	/* Enable All Interrupts */
 	CORE_AtomicEnableIrq();
 }
 
@@ -92,24 +92,24 @@ void LEUART0_IRQHandler(void)
  */
 void leuart_init(void)
 {
-	//Enabling GPIO required for LEUART.
+	/* Enabling GPIO required for LEUART */
 	leuart_gpio_init();
 
-	// Enable clocks for LEUART0
+	/* Enable clocks for LEUART0 */
 	CMU_ClockEnable(cmuClock_LEUART0, true);
 	CMU_ClockDivSet(cmuClock_LEUART0, cmuClkDiv_1); 									/* Don't prescale LEUART clock */
 
-	// Initialize the LEUART0 module
+	/* Initialize the LEUART0 module */
 	LEUART_Init_TypeDef init = LEUART_INIT_DEFAULT;
 	LEUART_Init(LEUART0, &init);
 
-	// Enable LEUART0 RX/TX pins
+	/* Enable LEUART0 RX/TX pins */
 	LEUART0->ROUTEPEN |= LEUART_ROUTEPEN_RXPEN | LEUART_ROUTEPEN_TXPEN;
 
 	LEUART0->ROUTELOC0 |= (LEUART0->ROUTELOC0 & (~_LEUART_ROUTELOC0_TXLOC_MASK)) | LEUART_ROUTELOC0_TXLOC_LOC18;
 	LEUART0->ROUTELOC0 |= (LEUART0->ROUTELOC0 & (~_LEUART_ROUTELOC0_RXLOC_MASK)) | LEUART_ROUTELOC0_RXLOC_LOC18;
 
-	// Enable LEUART0 RX interrupts
+	/* Enable LEUART0 RX interrupts */
 	LEUART_IntEnable(LEUART0, LEUART_IEN_RXDATAV);
 	NVIC_EnableIRQ(LEUART0_IRQn);
 }
@@ -127,13 +127,13 @@ void leuart_buffer_push(void)
 {
 	if(leuart_circbuff.write_index < LEUART_BUFFER_MAXSIZE)
 	{
-		//Save UART register data into the circular buffer
+		/* Save UART register data into the circular buffer */
 		leuart_circbuff.buffer[leuart_circbuff.write_index] = leuart_rcv(LEUART0);
 
-		//Increment the write index value
+		/* Increment the write index value */
 		leuart_circbuff.write_index = leuart_circbuff_index_increment(leuart_circbuff.write_index);
 
-		//Incrementing the buffer count variable if the buffer is not full or else keeping it the same i.e the maximum value here according to the if loop.
+		/* Incrementing the buffer count variable if the buffer is not full or else keeping it the same i.e the maximum value here according to the if loop */
 		if(leuart_circbuff.buffer_count < LEUART_BUFFER_MAXSIZE)
 		{
 			leuart_circbuff.buffer_count++;
@@ -145,7 +145,6 @@ void leuart_buffer_push(void)
 
 /**
  * @brief This function pops and returns the data from the Circular Buffer. i.e leuart_circbuff
- * @note This function must be enclosed in CORE_AtomicDisableIrq() and CORE_AtomicEnableIrq()
  * @param void
  * @return Data from the circular buffer using the read_index. -1 signifies no valid data present
  */
@@ -155,10 +154,10 @@ char leuart_buffer_pop(void)
 	{
 		uint32_t temp_read_index = leuart_circbuff.read_index;
 
-		//Increment the write index value
+		/* Increment the write index value */
 		leuart_circbuff.read_index = leuart_circbuff_index_increment(leuart_circbuff.read_index);
 
-		//Decrementing the buffer count variable if the buffer is not empty.
+		/* Decrementing the buffer count variable if the buffer is not empty */
 		leuart_circbuff.buffer_count--;
 
 		printf("POP: %c\n", leuart_circbuff.buffer[temp_read_index]);
@@ -170,6 +169,11 @@ char leuart_buffer_pop(void)
 }
 
 
+/**
+ * @brief This function return true if buffer is empty and false if buffer is not empty
+ * @param void
+ * @return bool
+ */
 bool leuart_buffer_empty_status(void)
 {
 	if(leuart_circbuff.buffer_count == 0)
@@ -179,7 +183,6 @@ bool leuart_buffer_empty_status(void)
 
 	return false;
 }
-
 
 
 /**
@@ -192,7 +195,7 @@ void leuart_loopback_test_blocking(void)
 {
 	const uint8_t cmd[9] = {0x7E, 0x00, 0x07, 0x01, 0x00, 0x2A, 0x02, 0xD8, 0x0F};
 
-	//Disable Interrupts over here in order to support blocking
+	/* Disable Interrupts over here in order to support blocking */
 	if ((LEUART0->IEN & LEUART_IEN_RXDATAV) || (LEUART0->IEN & LEUART_IEN_TXC))
 	{
 		LEUART_IntDisable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);

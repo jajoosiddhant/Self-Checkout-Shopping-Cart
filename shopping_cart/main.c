@@ -165,6 +165,9 @@ int main(void)
 
 
 
+/**
+ * @brief This function handles all the gecko events.
+ */
 static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 {
 	switch (evt_id) {
@@ -386,7 +389,6 @@ static void bt_server_print_address(void)
 												,server_address->addr[3],server_address->addr[2],
 												server_address->addr[1],server_address->addr[0]);
 }
-
 
 
 

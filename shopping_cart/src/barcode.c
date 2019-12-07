@@ -15,7 +15,11 @@
 #include "inc/leuart.h"
 
 
-
+/**
+ * @brief This function fetches the payload size from the barcode packet structure and converts it to an integer.
+ * @param struct barcode_packet* barcode_packet The pointer to the barcode packet structure
+ * @return The payload size
+ */
 static int barcode_payload_size_fetch(struct barcode_packet* barcode_packet)
 {
 	int payload_size = 0;
@@ -32,6 +36,12 @@ static int barcode_payload_size_fetch(struct barcode_packet* barcode_packet)
 
 }
 
+
+/**
+ * @brief This function fetches the cost from the barcode packet structure and converts it to an integer.
+ * @param struct barcode_packet* barcode_packet The pointer to the barcode packet structure
+ * @return The cost
+ */
 static int barcode_cost_fetch(struct barcode_packet* barcode_packet)
 {
 	int cost = 0;
@@ -48,7 +58,12 @@ static int barcode_cost_fetch(struct barcode_packet* barcode_packet)
 }
 
 
-//Payload_size might need change depending on what needs to be sent to the android application
+/**
+ * @brief This function creates a barcode packet structure as per the data received from the leuart_buffer on pop()
+ * and returns the payload size to a pointer passed as a parameter
+ * @param struct barcode_packet* barcode_packet, int *payload_size
+ * @return void
+ */
 void barcode_packet_create(struct barcode_packet* barcode_packet, int *payload_size)
 {
 
@@ -58,7 +73,7 @@ void barcode_packet_create(struct barcode_packet* barcode_packet, int *payload_s
 
 		barcode_packet->preamble = leuart_buffer_pop();
 
-		//Fetching and converting the character data of Payload size and Cost size here into interger digits.
+		/* Fetching and converting the character data of Payload size and Cost size here into interger digits */
 		local_payload_size = barcode_payload_size_fetch(barcode_packet);
 		printf("Payload_size: %d\n", local_payload_size);
 
@@ -76,13 +91,19 @@ void barcode_packet_create(struct barcode_packet* barcode_packet, int *payload_s
 	}
 }
 
-//Output should be 2,0,0,2,39,1,SS,SS where SS is checksum value and varies as per the data packet.
+
+/**
+ * @brief barcode testing function in blocking mode by sending data
+ * @note Output should be 2,0,0,2,39,1,SS,SS where SS is checksum value and varies as per the data packet.
+ * @param void
+ * @return void
+ */
 void barcode_test_blocking(void)
 {
 	const uint8_t cmd[9] = {0x7E, 0x00, 0x07, 0x01, 0x00, 0x2A, 0x02, 0xD8, 0x0F};
 
 
-	//Disable Interrupts over here in order to support blocking
+	/* Disable Interrupts over here in order to support blocking */
 	if ((LEUART0->IEN & LEUART_IEN_RXDATAV) || (LEUART0->IEN & LEUART_IEN_TXC))
 	{
 		LEUART_IntDisable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);
@@ -121,10 +142,17 @@ void barcode_test_blocking(void)
 }
 
 
+/**
+ * @brief barcode testing function in blocking mode by scanning barcode
+ * @note Output should be as per the barcode scanned in the datasheet
+ * @param void
+ * @return void
+ */
+
 void barcode_test_blocking_scanning(void)
 {
 
-	//Disable Interrupts over here in order to support blocking
+	/* Disable Interrupts over here in order to support blocking */
 	if ((LEUART0->IEN & LEUART_IEN_RXDATAV) || (LEUART0->IEN & LEUART_IEN_TXC))
 	{
 		LEUART_IntDisable(LEUART0, LEUART_IEN_RXDATAV | LEUART_IEN_TXC);

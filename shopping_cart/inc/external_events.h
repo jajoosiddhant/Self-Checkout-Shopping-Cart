@@ -12,11 +12,11 @@
 #define INC_EXTERNAL_EVENTS_H_
 
 
-//Event Bits assigned to different Signal Events
+/* Event Bits assigned to different Signal Events */
 #define EVENT_LEUART						(0x01)
 
 
-//Global Variable for Event Status
+/* Global Variable for Event Status */
 volatile uint32_t external_event;
 
 

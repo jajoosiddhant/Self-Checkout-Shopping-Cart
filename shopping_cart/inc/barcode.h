@@ -18,7 +18,7 @@
 
 
 
-//Variable Declarations
+/* Variable Declarations */
 struct barcode_packet									/* Example Packet data to send enclosed in the barcode scanner : ~013046shopping_cart`
  	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 ~ = preamble; 013 = payload_size; 046 = cost; payload = shopping_cart; ` = postamble*/
 {
@@ -41,10 +41,11 @@ struct barcode_packet									/* Example Packet data to send enclosed in the bar
 };
 
 
-struct barcode_packet barcode_packet;
+struct barcode_packet barcode_packet;							/*Only one instance of barcode packet since the data
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 is sent sequentially over bluetooth*/
 
 
-//Function Declarations
+/* Function Declarations */
 void barcode_test_blocking(void);
 void barcode_test_blocking_scanning(void);
 void barcode_packet_create(struct barcode_packet* barcode_packet, int * payload_size);

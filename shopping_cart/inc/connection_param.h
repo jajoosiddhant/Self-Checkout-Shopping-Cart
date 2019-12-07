@@ -12,7 +12,7 @@
 #define INC_CONNECTION_PARAM_H_
 
 
-//Macros for Connection Setup
+/* Macros for Connection Setup */
 #define ADV_HANDLE					(0)
 #define ADV_INTERVAL_MIN			(400)
 #define ADV_INTERVAL_MAX			(400)
