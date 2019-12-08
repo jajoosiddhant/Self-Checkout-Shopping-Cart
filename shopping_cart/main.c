@@ -423,5 +423,6 @@ static void bt_connection_init(void)
 
 
 
+
 /** @} (end addtogroup app) */
 /** @} (end addtogroup Application) */

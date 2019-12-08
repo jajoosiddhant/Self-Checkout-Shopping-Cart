@@ -29,6 +29,7 @@ static void leuart_gpio_init(void)
 	/* GPIO clock */
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
+
 	/* Initialize LEUART0 TX and RX pins */
 	GPIO_PinModeSet(gpioPortD, 10, gpioModePushPull, 1); 								/* TX (Pin Number 7) */
 	GPIO_PinModeSet(gpioPortD, 11, gpioModeInputPull, 1);   							/* RX (Pin Number 9) */

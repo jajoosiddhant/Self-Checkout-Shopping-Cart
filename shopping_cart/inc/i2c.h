@@ -7,25 +7,38 @@
  * @copyright Copyright (c) 2019
  *
  */
+
+
+#ifndef INC_I2C_H_
+#define INC_I2C_H_
+
 #include <stdint.h>
-#include "em_i2c.h"
-#include "src/gpio.h"
-#include "em_core.h"
+
 
 
 #define NXP_NTAG_R (0x05) //NXP NTAG NFC Read Command
 #define NXP_NTAG_W (0x04) //NXP NTAG NFC Write Command
 
-/*function declarations*/
 
-void i2cinit(void);
-void i2c_write_poll(uint8_t,uint8_t *);
-void i2cdisable(void);
-uint8_t* i2c_read_poll(uint8_t);
-uint8_t read_session_poll(uint8_t);
+/* SCL and SDA pins for I2C*/
+#define SCL_PORT						(gpioPortC)
+#define SDA_PORT						(gpioPortC)
+#define SCL_PIN							(10)
+#define SDA_PIN							(11)
 
-/*Global Variable*/
-uint8_t interrupt_flag_ack;
-uint8_t interrupt_flag_rxdata;
+
+/*Global Variables*/
+volatile uint8_t interrupt_flag_ack;
 uint8_t read[16];
 uint8_t write[16];
+
+
+/*Function Declarations*/
+void i2c_init(void);
+void i2c_write_poll(uint8_t add,uint8_t *data);
+void i2c_disable(void);
+uint8_t* i2c_read_poll(uint8_t register_address);
+uint8_t i2c_read_session_poll(uint8_t session_register);
+
+
+#endif /* INC_I2C_H_ */

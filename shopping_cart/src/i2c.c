@@ -8,55 +8,94 @@
  *
  */
 
-#include "src/i2c.h"
+
+#include <stdio.h>
+#include "em_gpio.h"
+#include "em_i2c.h"
+#include "em_cmu.h"
+#include "em_core.h"
+#include "em_cmu.h"
+#include "inc/i2c.h"
+
+
+
+#define DELAY_TIME						(100000)
+
 
 /**
  * @brief Delay function used to add additional delays required in I2C Initialization.
- * @param None
- *
+ * @param uint32_t time A random time number tick.
+ * @return void
  */
-static inline void delay(void)
+static inline void delay(uint32_t time)
 {
-	for(int i=0; i<1000000; i++);
+	uint32_t i;
+	for(i = 0; i < time; i++);
 }
+
+
+/**
+ * @brief Function to initialize the GPIO pins required for I2C.
+ * @param void
+ * @return void
+ */
+static void i2c_gpio_init(void)
+{
+	/* GPIO clock */
+	CMU_ClockEnable(cmuClock_GPIO, true);
+
+	/* Initializing SCL and SDA pins */
+	GPIO_PinModeSet(SCL_PORT, SCL_PIN, gpioModeWiredAnd, 1); 				/* SCL */
+	GPIO_PinModeSet(SDA_PORT, SDA_PIN, gpioModeWiredAnd, 1);				/* SDA */
+}
+
+
+
 /**
  * @brief This function is used to initialize I2C0 peripheral.
  * PortC 10 SCL, PortC 11 SDA is used.
+ * @param void
+ * @return void
  */
-void i2cinit()
+void i2c_init(void)
 {
+	/* Enabling GPIO required for I2C */
+	i2c_gpio_init();
 
-	GPIO_PinModeSet(gpioPortC, 10, gpioModeWiredAnd, 1); // SCL Before
-	GPIO_PinModeSet(gpioPortC, 11, gpioModeWiredAnd, 1);//SDA
-	GPIO_PinModeSet(gpioPortD, 15, gpioModePushPull, 1);
-	GPIO_PinOutSet(gpioPortD, 15);
+	/*I2C clock*/
+	CMU_ClockEnable(cmuClock_I2C0, true);
+	CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
 
-	for (int k=0;k<200000;k++); //Additional delay before ROUTE
+	/* Additional delay before ROUTE */
+	delay(200000);
 
 	I2C0 -> ROUTEPEN = I2C_ROUTEPEN_SCLPEN | I2C_ROUTEPEN_SDAPEN;
 	I2C0->ROUTELOC0 |= (I2C0->ROUTELOC0 & (~_I2C_ROUTELOC0_SCLLOC_MASK))| I2C_ROUTELOC0_SCLLOC_LOC14;
 	I2C0->ROUTELOC0 |= (I2C0->ROUTELOC0 & (~_I2C_ROUTELOC0_SDALOC_MASK))| I2C_ROUTELOC0_SDALOC_LOC16;
 
-	const I2C_Init_TypeDef i2cinitialization = I2C_INIT_DEFAULT; //Default initialization
+	/* Default initialization */
+	const I2C_Init_TypeDef i2cinitialization = I2C_INIT_DEFAULT;
 
 	I2C_Init(I2C0, &i2cinitialization);
-	delay();
+	delay(DELAY_TIME);
 	I2C_Enable(I2C0,true);
-	delay();
+	delay(DELAY_TIME);
 
-	/*Toggle SCL for 9 times as specified in datasheet*/
+	/*Toggle SCL 9 times as specified in datasheet*/
 	for (int i=0; i<9; i++)
 	{
-		GPIO_PinOutClear(gpioPortC,10);
-		GPIO_PinOutSet(gpioPortC,10);
-
+		GPIO_PinOutClear(SCL_PORT, SCL_PIN);
+		GPIO_PinOutSet(SCL_PORT, SCL_PIN);
 	}
-	for (int k=0;k<200000;k++);
+	delay(2 * DELAY_TIME);
+
 	if(I2C0->STATE & I2C_STATE_BUSY)
 	{
 		I2C0->CMD = I2C_CMD_ABORT;
-		//NVIC_EnableIRQ(I2C0_IRQn);
 	}
+
+
+	/* Enabling NACK Interrupt for debugging purposes*/
 	NVIC_EnableIRQ(I2C0_IRQn);
 	I2C_IntEnable(I2C0, I2C_IFC_NACK);
 }
@@ -71,9 +110,8 @@ void i2cinit()
  */
 void i2c_write_poll(uint8_t add, uint8_t *data)
 {
-	I2C0->CMD = I2C_CMD_START;  //send start bit
-	I2C0->TXDATA = 0x04; //NXP NTAG Address.
-
+	I2C0->CMD = I2C_CMD_START;  					/* sending start bit */
+	I2C0->TXDATA = 0x04; 							/* NXP NTAG Address */
 
 	while((I2C0->IF & I2C_IF_ACK) == 0);
 	I2C0->IFC |= I2C_IFC_ACK;
@@ -153,6 +191,7 @@ void i2c_write_poll(uint8_t add, uint8_t *data)
 	while(I2C0->CMD & I2C_STATUS_PSTOP);
 }
 
+
 /**
  * @brief This function is used to read the session register inside the NFC using the interrupts
  * @param session_register - Address of the session register which is read.
@@ -160,14 +199,15 @@ void i2c_write_poll(uint8_t add, uint8_t *data)
  */
 uint8_t read_session(uint8_t session_register)
 {
-	I2C0->CMD = I2C_CMD_START;  //send start bit
-	I2C0->TXDATA = 0x04; //slave address.
-	delay();
+	I2C0->CMD = I2C_CMD_START;  								/* send start bit */
+	I2C0->TXDATA = 0x04; 										/* slave address */
+
+	delay(DELAY_TIME);
 	if(interrupt_flag_ack && ((I2C0->IF & I2C_IF_ACK) == 0))
 	{
 		interrupt_flag_ack = 0;
 		I2C0->TXDATA = 0xFE;
-		delay();
+		delay(DELAY_TIME);
 	}
 	if(interrupt_flag_ack && ((I2C0->IF & I2C_IF_ACK) == 0))
 	{
@@ -179,7 +219,7 @@ uint8_t read_session(uint8_t session_register)
 		interrupt_flag_ack = 0;
 		I2C0->CMD = I2C_CMD_STOP;
 	}
-	delay(); //Required for EEPROM Writing
+	delay(DELAY_TIME); 													/* Required for EEPROM Writing */
 
 	for(int i = 0; i < 10; i++);
 	I2C0->CMD = I2C_CMD_START;
@@ -192,25 +232,25 @@ uint8_t read_session(uint8_t session_register)
 	while(I2C0->IF & I2C_IF_RXDATAV)
 	{
 		data = I2C0->RXDATA;
-		delay();
+		delay(DELAY_TIME);
 	}
 
 	I2C0->CMD = I2C_CMD_ACK;
 	I2C0->CMD = I2C_CMD_STOP;
-	delay();
+	delay(DELAY_TIME);
 	return data;
 
 }
+
 
 /**
  * @brief This function is used to read the session register inside the NFC using polling method
  * @param session_register - Address of the session register which is read.
  * @return uint8_t - Returns data read from the session register.
  */
-uint8_t read_session_poll(uint8_t session_register)
+uint8_t i2c_read_session_poll(uint8_t session_register)
 {
-	 //slave address.
-	I2C0->CMD = I2C_CMD_START;  //send start bit
+	I2C0->CMD = I2C_CMD_START;  									/* send start bit */
 	I2C0->TXDATA = 0x04;
 
 	while((I2C0->IF & I2C_IF_ACK) == 0);
@@ -228,7 +268,7 @@ uint8_t read_session_poll(uint8_t session_register)
 	I2C0->IFC |= I2C_IFC_ACK;
 
 	I2C0->CMD = I2C_CMD_STOP;
-	delay(); //Required for EEPROM Writing
+	delay(DELAY_TIME); //Required for EEPROM Writing
 
 
 	I2C0->CMD = I2C_CMD_START;
@@ -245,7 +285,7 @@ uint8_t read_session_poll(uint8_t session_register)
 
 	I2C0->CMD = I2C_CMD_ACK;
 	I2C0->CMD = I2C_CMD_STOP;
-	delay();
+	delay(DELAY_TIME);
 	return data;
 }
 
@@ -257,7 +297,8 @@ uint8_t read_session_poll(uint8_t session_register)
  */
 uint8_t* i2c_read_poll(uint8_t register_address)
 {
-	I2C0->CMD = I2C_CMD_START;  //send start bit
+	/* send start bit and slave address */
+	I2C0->CMD = I2C_CMD_START;
 	I2C0->TXDATA = 0x04; //slave address.
 
 	while((I2C0->IF & I2C_IF_ACK) == 0);
@@ -268,7 +309,7 @@ uint8_t* i2c_read_poll(uint8_t register_address)
 	I2C0->IFC |= I2C_IFC_ACK;
 
 	I2C0->CMD = I2C_CMD_STOP;
-	delay();
+	delay(DELAY_TIME);
 
 	I2C0->CMD = I2C_CMD_START;
 	I2C0->TXDATA = NXP_NTAG_R;
@@ -343,7 +384,7 @@ uint8_t* i2c_read_poll(uint8_t register_address)
 	I2C0->CMD = I2C_CMD_ACK;
 
 	I2C0->CMD = I2C_CMD_STOP;
-	delay();
+	delay(DELAY_TIME);
 	while(I2C0->CMD & I2C_STATUS_PSTOP);
 	return read;
 
@@ -355,15 +396,15 @@ uint8_t* i2c_read_poll(uint8_t register_address)
  * @param None
  * @return None
  */
-void i2cdisable()
+void i2c_disable(void)
 {
 	I2C0 -> ROUTEPEN &= ~I2C_ROUTEPEN_SCLPEN;
 	I2C0 -> ROUTEPEN &=~ I2C_ROUTEPEN_SDAPEN;
 	I2C_Enable(I2C0, false);
-	GPIO_PinOutClear(gpioPortC, 10); // SCL Before
-	GPIO_PinOutClear(gpioPortC, 11);//SDA
-	GPIO_PinOutClear(gpioPortD, 15);
+	GPIO_PinOutClear(gpioPortC, 10); 					/* SCL line */
+	GPIO_PinOutClear(gpioPortC, 11);					/* SDA Line */
 }
+
 
 /**
  * @brief- IRQ Handler for I2C0 Peripheral
@@ -372,7 +413,9 @@ void i2cdisable()
  */
 void I2C0_IRQHandler()
 {
-	CORE_ATOMIC_IRQ_DISABLE();
+	/* Disable All Interrupts */
+	CORE_AtomicDisableIrq();
+
 	if(I2C0->IF & I2C_IF_ACK)
 	{
 		I2C0->IFC |= I2C_IFC_ACK;
@@ -383,14 +426,8 @@ void I2C0_IRQHandler()
 		printf("NACK Received\n");
 		I2C0->IFC |= I2C_IFC_NACK;
 	}
-	CORE_ATOMIC_IRQ_ENABLE();
+
+	/* Enable All Interrupts */
+	CORE_AtomicEnableIrq();
 }
-/**
- * @brief Delay function used to add additional delays required in I2C Initialization.
- * @param None
- * @return None
- */
-static void inline delay(void)
-{
-	for(int i=0; i<1000000; i++);
-}
+
