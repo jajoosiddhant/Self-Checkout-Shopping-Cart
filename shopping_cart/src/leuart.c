@@ -116,6 +116,52 @@ void leuart_init(void)
 }
 
 
+/**
+ * @brief This function increments the read or write index of the circular buffer based on the
+ * maximum size of the circular buffer.
+ * @note This function might lead to overwriting of the previous data on index rollover.
+ * Developer must make sure to read the old data as soon as possible.
+ * @param The read or write index value of the circular buffer
+ * @return void
+ */
+uint32_t leuart_circbuff_index_increment(uint32_t index)
+{
+	if(index == LEUART_BUFFER_MAXSIZE - 1)
+	{
+		index = 0;
+	}
+	else
+	{
+		index++;
+	}
+
+	return index;
+}
+
+
+
+/**
+ * @brief Function to send data using LEUART peripheral.
+ * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
+ * @param uint8_data 8 bit data to be sent.
+ * @return void
+ */
+void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
+{
+	uint8_t tx_data = data;
+	LEUART_Tx(leuart, tx_data);
+}
+
+
+/**
+ * @brief Function to receive data using LEUART Peripheral.
+ * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
+ * @return data
+ */
+char leuart_rcv(LEUART_TypeDef *leuart)
+{
+	return LEUART_Rx(leuart);
+}
 
 
 /**
@@ -167,7 +213,6 @@ char leuart_buffer_pop(void)
 		return leuart_circbuff.buffer[temp_read_index];
 	}
 
-	//TODO: Check return value here with datatype of the function
 	return -1;
 }
 
@@ -289,32 +334,5 @@ void leuart_loopback_test_non_blocking(void)
 	leuart_send(LEUART0, cmd[8]);
 	printf("Data Sent\n");
 	printf("DATA: %x\n", leuart_rcv(LEUART0));
-
 }
 
-
-uint32_t leuart_circbuff_index_increment(uint32_t index)
-{
-	if(index == LEUART_BUFFER_MAXSIZE - 1)
-	{
-		index = 0;
-	}
-	else
-	{
-		index++;
-	}
-
-	return index;
-}
-
-
-void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
-{
-	uint8_t tx_data = data;
-	LEUART_Tx(leuart, tx_data);
-}
-
-char leuart_rcv(LEUART_TypeDef *leuart)
-{
-	return LEUART_Rx(leuart);
-}
