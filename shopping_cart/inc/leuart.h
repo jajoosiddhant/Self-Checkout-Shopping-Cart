@@ -63,11 +63,11 @@ void leuart_loopback_test_non_blocking(void);
  * @param uint8_data 8 bit data to be sent.
  * @return void
  */
-inline void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
-{
+void leuart_send(LEUART_TypeDef *leuart, uint8_t data);
+/*{
 	uint8_t tx_data = data;
 	LEUART_Tx(leuart, tx_data);
-}
+}*/
 
 
 /**
@@ -75,10 +75,10 @@ inline void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
  * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
  * @return data
  */
-inline char leuart_rcv(LEUART_TypeDef *leuart)
-{
+char leuart_rcv(LEUART_TypeDef *leuart);
+/*{
 	return LEUART_Rx(leuart);
-}
+}*/
 
 
 /**
@@ -89,8 +89,8 @@ inline char leuart_rcv(LEUART_TypeDef *leuart)
  * @param The read or write index value of the circular buffer
  * @return void
  */
-inline uint32_t leuart_circbuff_index_increment(uint32_t index)
-{
+uint32_t leuart_circbuff_index_increment(uint32_t index);
+/*{
 	if(index == LEUART_BUFFER_MAXSIZE - 1)
 	{
 		index = 0;
@@ -101,7 +101,7 @@ inline uint32_t leuart_circbuff_index_increment(uint32_t index)
 	}
 
 	return index;
-}
+}*/
 
 
 

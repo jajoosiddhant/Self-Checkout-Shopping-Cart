@@ -19,7 +19,7 @@
 
 
 
-#define DELAY_TIME						(100000)
+#define DELAY_TIME						(1000000)
 
 
 /**
@@ -66,6 +66,7 @@ void i2c_init(void)
 	CMU_ClockEnable(cmuClock_I2C0, true);
 	CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
 
+
 	/* Additional delay before ROUTE */
 	delay(200000);
 
@@ -87,7 +88,7 @@ void i2c_init(void)
 		GPIO_PinOutClear(SCL_PORT, SCL_PIN);
 		GPIO_PinOutSet(SCL_PORT, SCL_PIN);
 	}
-	delay(2 * DELAY_TIME);
+	delay(200000);
 
 	if(I2C0->STATE & I2C_STATE_BUSY)
 	{
@@ -110,6 +111,7 @@ void i2c_init(void)
  */
 void i2c_write_poll(uint8_t add, uint8_t *data)
 {
+	uint8_t i;
 	I2C0->CMD = I2C_CMD_START;  					/* sending start bit */
 	I2C0->TXDATA = 0x04; 							/* NXP NTAG Address */
 
@@ -117,75 +119,14 @@ void i2c_write_poll(uint8_t add, uint8_t *data)
 	I2C0->IFC |= I2C_IFC_ACK;
 
 	I2C0->TXDATA = add;
-	uint8_t index = 0;
 
 	/*Writing 16 Bytes */
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-	I2C0->TXDATA = data[0];
-
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-	I2C0->TXDATA = data[1];
-
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-	I2C0->TXDATA = data[2];
-
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[3];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[4];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[5];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[6];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[7];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[8];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[9];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[10];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[11];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[12];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[13];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[14];
- 	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
-
-	I2C0->TXDATA = data[15];
-	while((I2C0->IF & I2C_IF_ACK) == 0);
-	I2C0->IFC |= I2C_IFC_ACK;
+	for(i = 0; i < 16; i++)
+	{
+		while((I2C0->IF & I2C_IF_ACK) == 0);
+		I2C0->IFC |= I2C_IFC_ACK;
+		I2C0->TXDATA = data[i];
+	}
 
 	I2C0->CMD = I2C_CMD_STOP;
 	while(I2C0->CMD & I2C_STATUS_PSTOP);
@@ -268,7 +209,7 @@ uint8_t i2c_read_session_poll(uint8_t session_register)
 	I2C0->IFC |= I2C_IFC_ACK;
 
 	I2C0->CMD = I2C_CMD_STOP;
-	delay(DELAY_TIME); //Required for EEPROM Writing
+	delay(DELAY_TIME); 													/* Required for EEPROM Writing */
 
 
 	I2C0->CMD = I2C_CMD_START;
@@ -297,9 +238,11 @@ uint8_t i2c_read_session_poll(uint8_t session_register)
  */
 uint8_t* i2c_read_poll(uint8_t register_address)
 {
+	uint8_t i;
+
 	/* send start bit and slave address */
 	I2C0->CMD = I2C_CMD_START;
-	I2C0->TXDATA = 0x04; //slave address.
+	I2C0->TXDATA = 0x04;
 
 	while((I2C0->IF & I2C_IF_ACK) == 0);
 	I2C0->IFC |= I2C_IFC_ACK;
@@ -317,76 +260,18 @@ uint8_t* i2c_read_poll(uint8_t register_address)
 	while((I2C0->IF & I2C_IF_ACK) == 0);
 	I2C0->IFC |= I2C_IFC_ACK;
 
-	//uint8_t index = 0;
+	for(i = 0; i < 16; i++)
+	{
+		while((I2C0->IF & I2C_IF_RXDATAV) == 0);
+		read[i] = I2C0->RXDATA;
+		I2C0->CMD = I2C_CMD_ACK;
+	}
 
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[0] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[1] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[2] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[3] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[4] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[5] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[6] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[7] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[8] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[9] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[10] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[11] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[12] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[13] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[14] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
-
-	while((I2C0->IF & I2C_IF_RXDATAV) == 0);
-	read[15] = I2C0->RXDATA;
-	I2C0->CMD = I2C_CMD_ACK;
 
 	I2C0->CMD = I2C_CMD_STOP;
 	delay(DELAY_TIME);
 	while(I2C0->CMD & I2C_STATUS_PSTOP);
-	return read;
+	return &read[0];
 
 }
 
@@ -403,6 +288,35 @@ void i2c_disable(void)
 	I2C_Enable(I2C0, false);
 	GPIO_PinOutClear(gpioPortC, 10); 					/* SCL line */
 	GPIO_PinOutClear(gpioPortC, 11);					/* SDA Line */
+}
+
+
+/**
+ * @brief Testing function to check whether I2C is working
+ * @note The output printfs should be 0x70, 0x2E, 0x6F, 0x6F, 0x62, 0x08, 0x00, 0x90, 0xE6, 0xb1, 0x29, 0xef, 0x57, 0x0b, 0x00, 0x6D, 0x6F.
+ * @param void
+ * @return void
+ */
+void i2c_test_blocking(void)
+{
+	uint8_t i;
+	uint8_t write_nfc_row[16] = {0x70, 0x2E, 0x6F, 0x6F, 0x62, 0x08, 0x00, 0x90, 0xE6, 0xE1, 0xA6, 0xA8, 0xBC, 0xFE, 0x6D, 0x6F};
+	uint8_t blue_gecko_addr[6] = {0xb1, 0x29, 0xef, 0x57, 0x0b, 0x00};
+
+	for (i = 7; i <= 12; i++)
+	{
+		write_nfc_row[i] = blue_gecko_addr[i-7];
+	}
+
+	i2c_write_poll(0x03, write_nfc_row);
+
+	delay(DELAY_TIME);
+
+	uint8_t* received_i2c = i2c_read_poll(0x03);
+	for (i= 0; i < 16; i++)
+	{
+		printf("Data into the address %x -- %x\n", (0x03+i), received_i2c[i]);
+	}
 }
 
 

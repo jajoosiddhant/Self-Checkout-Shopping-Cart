@@ -56,6 +56,7 @@
 #include "inc/connection_param.h"
 #include "inc/external_events.h"
 #include "inc/barcode.h"
+#include "inc/i2c.h"
 
 
 #define TIMER_CLK_FREQ 							((uint32)32768)				/* Timer Clock Frequency */
@@ -134,14 +135,17 @@ int main(void)
 {
   /* Initialize device */
   initMcu();
+
   /* Initialize board */
   initBoard();
+
   /* Initialize application */
   initApp();
-  //Initializing Bluetooth Stack Configuration
+
+  /* Initializing Bluetooth Stack Configuration */
   gecko_init(&config);
 
-  //UART Console Setup for Debugging
+  /* UART Console Setup for Debugging */
   RETARGET_SerialInit();
   RETARGET_SerialCrLf(true);
 
@@ -182,8 +186,11 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 		//Set up Bluetooth connection parameters and start advertising.
 		bt_connection_init();
 		leuart_init();
+		i2c_init();
+		i2c_test_blocking();
 
 		//gecko_cmd_sm_increase_security(connection_handle);
+
 		break;
 
 
@@ -411,7 +418,7 @@ static void bt_connection_init(void)
 	gecko_cmd_sm_delete_bondings();
 
 	// Configure Security
-	gecko_cmd_sm_configure(SECURITY_CONFIGURE_FLAG,sm_io_capability_displayonly);
+	gecko_cmd_sm_configure(SECURITY_CONFIGURE_FLAG,sm_io_capability_noinputnooutput);
 
 	//Set into Bondable Mode
 	gecko_cmd_sm_set_bondable_mode(1);

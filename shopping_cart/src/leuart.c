@@ -292,3 +292,29 @@ void leuart_loopback_test_non_blocking(void)
 
 }
 
+
+uint32_t leuart_circbuff_index_increment(uint32_t index)
+{
+	if(index == LEUART_BUFFER_MAXSIZE - 1)
+	{
+		index = 0;
+	}
+	else
+	{
+		index++;
+	}
+
+	return index;
+}
+
+
+void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
+{
+	uint8_t tx_data = data;
+	LEUART_Tx(leuart, tx_data);
+}
+
+char leuart_rcv(LEUART_TypeDef *leuart)
+{
+	return LEUART_Rx(leuart);
+}
