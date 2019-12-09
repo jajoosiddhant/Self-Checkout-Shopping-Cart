@@ -25,7 +25,7 @@
 #define CON_LATENCY					(3)
 #define CON_TIMEOUT					(400)
 
-#define SECURITY_CONFIGURE_FLAG 	(0x00)
+#define SECURITY_CONFIGURE_FLAG		(0x00)
 
 
 

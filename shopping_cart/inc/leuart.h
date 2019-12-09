@@ -50,9 +50,6 @@ struct leuart_circbuff leuart_circbuff;					/* Only one instance of leuart buffe
 
 /* Function declarations */
 void leuart_init(void);
-//void leuart_send(LEUART_TypeDef *leuart, uint8_t data);
-//char leuart_rcv(LEUART_TypeDef *leuart);
-//uint32_t leuart_circbuff_index_increment(uint32_t index);
 void leuart_buffer_push(void);
 char leuart_buffer_pop(void);
 bool leuart_buffer_empty_status(void);
