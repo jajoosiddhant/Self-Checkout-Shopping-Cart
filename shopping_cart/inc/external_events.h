@@ -14,6 +14,7 @@
 
 /* Event Bits assigned to different Signal Events */
 #define EVENT_LEUART						(0x01)
+#define EVENT_NFC_GPIO						(0x02)
 
 
 /* Global Variable for Event Status */

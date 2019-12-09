@@ -57,7 +57,7 @@
 #include "inc/external_events.h"
 #include "inc/barcode.h"
 #include "inc/i2c.h"
-
+#include "inc/gpio.h"
 
 #define TIMER_CLK_FREQ 							((uint32)32768)				/* Timer Clock Frequency */
 #define TIMER_S_TO_TICKS(s)						(TIMER_CLK_FREQ * s)		/* Convert seconds to timer ticks */
@@ -185,9 +185,11 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 		//Set up Bluetooth connection parameters and start advertising.
 		bt_connection_init();
+		bt_server_print_address();
+		gpio_init();
 		leuart_init();
 		i2c_init();
-		i2c_test_blocking();
+		//i2c_test_blocking();
 
 		//gecko_cmd_sm_increase_security(connection_handle);
 
@@ -295,16 +297,16 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 
 	case gecko_evt_system_external_signal_id:
-//		printf("Event: gecko_evt_system_external_signal_id\n");
+		printf("Event: gecko_evt_system_external_signal_id\n");
 
-//		TODO: Disable interrupts for the entire block
 		if (evt->data.evt_system_external_signal.extsignals & EVENT_LEUART)
 		{
-//			printf("External Signal Event for LEUART received.\n");
 
 			CORE_AtomicDisableIrq();
 			external_event &= ~EVENT_LEUART;
 			CORE_AtomicEnableIrq();
+
+			printf("External Signal Event for LEUART received.\n");
 
 			//Initial data - Not necessary to initialize
 			uint32_t temp_read_index = leuart_circbuff.read_index;
@@ -316,16 +318,13 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 			{
 
 				//TODO: Add a Software Timer for UART Receiving external event trigger.
-				//TODO: Check this if condition 10 times ??? Should not be required because the scanning time for barcode is not that fast.
 				if(leuart_circbuff.buffer[leuart_circbuff.read_index] == BARCODE_PREAMBLE)
 				{
-//					printf("Inside if loop external event\n");
 					temp_read_index = leuart_circbuff.read_index + 7;							/* 7 as per the packet structure */
 
 					/* Start making packet here */
 					barcode_packet_create(&barcode_packet, &payload_size);
 
-					//TODO: Check if this loop satisfies every condition.
 				}
 				else if(leuart_circbuff.buffer[leuart_circbuff.read_index] == BARCODE_POSTAMBLE)
 				{
@@ -342,7 +341,6 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 					/* Initializing the barcode_packet data structure to zero */
 					memset(&barcode_packet, 0, sizeof(struct barcode_packet));
-
 				}
 				else
 				{
@@ -350,6 +348,16 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 				}
 			}
 		}
+
+		if (evt->data.evt_system_external_signal.extsignals & EVENT_NFC_GPIO)
+		{
+			CORE_AtomicDisableIrq();
+			external_event &= ~EVENT_NFC_GPIO;
+			CORE_AtomicEnableIrq();
+
+			printf("External Signal Event for NFC FD pin interrupt received.\n");
+		}
+
 		break;
 
 
@@ -395,6 +403,7 @@ static void bt_server_print_address(void)
 	sprintf(server_address_string,"%x:%x:%x:%x:%x:%x", server_address->addr[5],server_address->addr[4]
 												,server_address->addr[3],server_address->addr[2],
 												server_address->addr[1],server_address->addr[0]);
+	printf("Server Address: %s \n", server_address_string);
 }
 
 

@@ -49,7 +49,7 @@ void LEUART0_IRQHandler(void)
 
 	/* Acknowledge and Clear the Interrupt */
 	uint32_t flags = LEUART_IntGet(LEUART0);
-	LEUART_IntClear(LEUART0, LEUART_IF_TXC);
+	LEUART_IntClear(LEUART0, flags);
 
 	/* RX portion of the interrupt handler */
 	if (flags & LEUART_IF_RXDATAV)
@@ -143,7 +143,6 @@ void leuart_buffer_push(void)
 }
 
 
-
 /**
  * @brief This function pops and returns the data from the Circular Buffer. i.e leuart_circbuff
  * @note The function return -1 when the buffer is empty. The received data needs to be typecasted to a signed integer
@@ -167,7 +166,6 @@ char leuart_buffer_pop(void)
 		return leuart_circbuff.buffer[temp_read_index];
 	}
 
-	//TODO: Check return value here with datatype of the function
 	return -1;
 }
 
@@ -289,32 +287,5 @@ void leuart_loopback_test_non_blocking(void)
 	leuart_send(LEUART0, cmd[8]);
 	printf("Data Sent\n");
 	printf("DATA: %x\n", leuart_rcv(LEUART0));
-
 }
 
-
-uint32_t leuart_circbuff_index_increment(uint32_t index)
-{
-	if(index == LEUART_BUFFER_MAXSIZE - 1)
-	{
-		index = 0;
-	}
-	else
-	{
-		index++;
-	}
-
-	return index;
-}
-
-
-void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
-{
-	uint8_t tx_data = data;
-	LEUART_Tx(leuart, tx_data);
-}
-
-char leuart_rcv(LEUART_TypeDef *leuart)
-{
-	return LEUART_Rx(leuart);
-}

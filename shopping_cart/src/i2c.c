@@ -230,6 +230,7 @@ uint8_t i2c_read_session_poll(uint8_t session_register)
 	return data;
 }
 
+
 /**
  * @brief This function is a polling read driver for NXP NTAG I2C NFC Device.
  * 16 Bytes are read in a single I2C read transfer.
