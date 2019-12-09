@@ -50,14 +50,62 @@ struct leuart_circbuff leuart_circbuff;					/* Only one instance of leuart buffe
 
 /* Function declarations */
 void leuart_init(void);
-void leuart_send(LEUART_TypeDef *leuart, uint8_t data);
-char leuart_rcv(LEUART_TypeDef *leuart);
-uint32_t leuart_circbuff_index_increment(uint32_t index);
+//void leuart_send(LEUART_TypeDef *leuart, uint8_t data);
+//char leuart_rcv(LEUART_TypeDef *leuart);
+//uint32_t leuart_circbuff_index_increment(uint32_t index);
 void leuart_buffer_push(void);
 char leuart_buffer_pop(void);
 bool leuart_buffer_empty_status(void);
 void leuart_loopback_test_blocking(void);
 void leuart_loopback_test_non_blocking(void);
+
+
+/**
+ * @brief This function increments the read or write index of the circular buffer based on the
+ * maximum size of the circular buffer.
+ * @note This function might lead to overwriting of the previous data on index rollover.
+ * Developer must make sure to read the old data as soon as possible.
+ * @param The read or write index value of the circular buffer
+ * @return void
+ */
+static inline uint32_t leuart_circbuff_index_increment(uint32_t index)
+{
+	if(index == LEUART_BUFFER_MAXSIZE - 1)
+	{
+		index = 0;
+	}
+	else
+	{
+		index++;
+	}
+
+	return index;
+}
+
+
+
+/**
+ * @brief Function to send data using LEUART peripheral.
+ * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
+ * @param uint8_data 8 bit data to be sent.
+ * @return void
+ */
+static inline void leuart_send(LEUART_TypeDef *leuart, uint8_t data)
+{
+	uint8_t tx_data = data;
+	LEUART_Tx(leuart, tx_data);
+}
+
+
+/**
+ * @brief Function to receive data using LEUART Peripheral.
+ * @param LEUART_TypeDef* The LEUART peripheral being used. eg: LEUART0.
+ * @return data
+ */
+static inline char leuart_rcv(LEUART_TypeDef *leuart)
+{
+	return LEUART_Rx(leuart);
+}
 
 
 
