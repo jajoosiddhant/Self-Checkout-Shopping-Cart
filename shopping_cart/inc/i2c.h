@@ -39,6 +39,7 @@ void i2c_write_poll(uint8_t add,uint8_t *data);
 void i2c_disable(void);
 uint8_t* i2c_read_poll(uint8_t register_address);
 uint8_t i2c_read_session_poll(uint8_t session_register);
+void i2c_test_blocking(void);
 
 
 #endif /* INC_I2C_H_ */

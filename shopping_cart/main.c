@@ -185,9 +185,10 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 		//Set up Bluetooth connection parameters and start advertising.
 		bt_connection_init();
+		bt_server_print_address();
 		leuart_init();
 		i2c_init();
-		i2c_test_blocking();
+		//i2c_test_blocking();
 
 		//gecko_cmd_sm_increase_security(connection_handle);
 
@@ -395,6 +396,7 @@ static void bt_server_print_address(void)
 	sprintf(server_address_string,"%x:%x:%x:%x:%x:%x", server_address->addr[5],server_address->addr[4]
 												,server_address->addr[3],server_address->addr[2],
 												server_address->addr[1],server_address->addr[0]);
+	printf("Server Address: %s \n", server_address_string);
 }
 
 
