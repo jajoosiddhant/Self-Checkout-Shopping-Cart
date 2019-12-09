@@ -49,7 +49,7 @@ void LEUART0_IRQHandler(void)
 
 	/* Acknowledge and Clear the Interrupt */
 	uint32_t flags = LEUART_IntGet(LEUART0);
-	LEUART_IntClear(LEUART0, LEUART_IF_TXC);
+	LEUART_IntClear(LEUART0, flags);
 
 	/* RX portion of the interrupt handler */
 	if (flags & LEUART_IF_RXDATAV)
