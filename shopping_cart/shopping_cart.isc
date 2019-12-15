@@ -1,5 +1,5 @@
 #ISD afv6
-# Simplicity Studio version: 5.12.1.201911130818-1544
+# Simplicity Studio version: 5.10.4.201909101634-1527
 
 # Application configuration
 stackId: com.silabs.sdk.stack.super
@@ -81,7 +81,7 @@ appPlugin: stack_bridge=false
     <informativeText>Custom service</informativeText>
     <characteristic id="product_name" name="Product Name" sourceId="custom.type" uuid="851a210f-bb13-4042-a780-759b93fd1e49">
       <informativeText>Custom characteristic</informativeText>
-      <value length="20" type="utf-8" variable_length="false"/>
+      <value length="50" type="utf-8" variable_length="false"/>
       <properties bonded_write="false" bonded_write_requirement="optional" indicate="true" indicate_requirement="mandatory" notify="false" notify_requirement="excluded" read="true" read_requirement="optional" write="true" write_no_response="false" write_no_response_requirement="optional" write_requirement="optional"/>
       <descriptor id="client_characteristic_configuration" name="Client Characteristic Configuration" sourceId="custom.type" uuid="acdf9e56-13ef-4c6d-842b-0517ef3e10dd">
         <value length="2" type="hex" variable_length="false"/>

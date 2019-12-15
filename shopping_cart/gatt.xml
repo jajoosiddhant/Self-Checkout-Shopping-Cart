@@ -78,7 +78,7 @@
     <!--Product Name-->
     <characteristic id="product_name" name="Product Name" sourceId="custom.type" uuid="851a210f-bb13-4042-a780-759b93fd1e49">
       <informativeText>Custom characteristic</informativeText>
-      <value length="20" type="utf-8" variable_length="false"/>
+      <value length="50" type="utf-8" variable_length="false"/>
       <properties bonded_write="false" bonded_write_requirement="optional" indicate="true" indicate_requirement="mandatory" notify="false" notify_requirement="excluded" read="true" read_requirement="optional" write="true" write_no_response="false" write_no_response_requirement="optional" write_requirement="optional"/>
       
       <!--Client Characteristic Configuration-->

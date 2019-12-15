@@ -67,8 +67,8 @@
 #define TIMER_S_TO_TICKS(s)						(TIMER_CLK_FREQ * s)		/* Convert seconds to timer ticks */
 #define SOFT_TIMER_LEUART_INTERRUPT				(55)
 #define CART_DEBUG_PRINTS						(1)							/* Comment this line to remove debug prints */*/
-#define EXTRA_PAYLOAD_SIZE						(1 + 3 + 1 + 1)				/* 1 byte for "," , 3 bytes for cost, 1 byte for "\n" , 1 byte to accomodate NULL character*/
-#define MAX_BLUETOOTH_SIZE_SEND					(20)						/* This is the maximum bluetooth data size that can be sent in one go */
+#define EXTRA_PAYLOAD_SIZE						(1 + 1 + 3 + 1 + 1)				/* 1 byte for "," , 1 byte for "$", 3 bytes for cost, 1 byte for "\n" , 1 byte to accomodate NULL character*/
+#define MAX_BLUETOOTH_SIZE_SEND					(50)						/* This is the maximum bluetooth data size that can be sent in one go */
 
 
 #ifdef CART_DEBUG_PRINTS
@@ -122,12 +122,16 @@ static gecko_configuration_t config = {
 
 
 
-/* Global Variables for Connection Setup */
+/* Global Variables */
 static uint8_t boot_to_dfu = 0;					// Flag for indicating DFU Reset must be performed
 static uint8_t connection_handle;
-int total_cost = 0;
+int payload_size = 0;							/* Payload_size to be sent to the android application */
+int total_cost = 0;								/* Total cost of the shopping list is stored here */
+
 uint8_t write_nfc_row[16] = {0x03, 0x18, 0xD1, 0x01, 0x14, 0x54, 0x02, 0x65, 0x6E, 0x30, 0x30, 0x3A, 0x30, 0x42, 0x3A, 0x35};
 uint8_t write_nfc_row_1[16] = {0x37, 0x3A, 0x45, 0x46, 0x3A, 0x32, 0x39, 0x3A, 0x42, 0x31, 0xFE, 0x4F, 0x00, 0x00, 0x00, 0x00};
+
+
 
 
 /* Function Declarations */
@@ -192,15 +196,15 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 	case gecko_evt_system_boot_id:
 		printf("Event: gecko_evt_system_boot_id\n");
+
+		/* Initializing GPIO Interrupts for NFC, LEUART and I2C*/
 		gpio_init();
 		leuart_init();
 		i2c_init();
-		//Set up Bluetooth connection parameters and start advertising.
+
+		/*Set up Bluetooth connection parameters and start advertising */
 		bt_connection_init();
-	//	bt_server_print_address();
-//		write_ble_address_to_nfc();
-		total_cost = 0;
-		//i2c_test_blocking();
+
 		break;
 
 
@@ -226,10 +230,8 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 		printf("Client Address: %s \n", client_address_string);
 
 
-	//	gecko_cmd_hardware_set_soft_timer(TIMER_S_TO_TICKS(8), SOFT_TIMER_LEUART_INTERRUPT, 0);
+//		gecko_cmd_hardware_set_soft_timer(TIMER_S_TO_TICKS(8), SOFT_TIMER_LEUART_INTERRUPT, 0);
 
-		//Enable Indication/Notification
-		//gecko_cmd_gatt_set_characteristic_notification(connection_handle, gattdb_product_name, gatt_notification);
 		break;
 
 
@@ -282,7 +284,6 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 	case gecko_evt_hardware_soft_timer_id:
 		switch (evt->data.evt_hardware_soft_timer.handle){
-		static int i;
 		case SOFT_TIMER_LEUART_INTERRUPT:
 			if(!leuart_buffer_empty_status())
 			{
@@ -329,9 +330,6 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 			//Initial data - Not necessary to initialize
 			uint32_t temp_read_index = leuart_circbuff.read_index;
-			int payload_size = 0;																/* Payload_size might need change depending on what
-																									needs to be sent to the android application */
-			int cost = 0;
 
 			/* Read data from leuart_circbuff till it is empty */
 			while(!leuart_buffer_empty_status())
@@ -343,40 +341,40 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 					temp_read_index = leuart_circbuff.read_index + 7;							/* 7 as per the packet structure */
 
 					/* Start making packet here */
-					cost = barcode_packet_create(&barcode_packet, &payload_size);
-					total_cost += cost;
+					total_cost += barcode_packet_create(&barcode_packet, &payload_size);
 
 				}
 				else if(leuart_circbuff.buffer[leuart_circbuff.read_index] == BARCODE_POSTAMBLE)
 				{
 					/* Temporary packet to send data. Maxmum size BLE can transfer at a time is 20 bytes */
-					char packet_send[20];
+					char packet_send[MAX_BLUETOOTH_SIZE_SEND];
+					int total_payload_size = payload_size + EXTRA_PAYLOAD_SIZE;
+
 					memset(packet_send, 0, sizeof(packet_send));
 
-					/* Disable and Enable interrupts when copying data from leuart_circbuff to barcode_packet */
+					/* Pop the postamble and the \r character*/
 					barcode_packet.postamble = leuart_buffer_pop();
 					leuart_buffer_pop();														/* To remove the redundant \r received from the barcode*/
+
+					/* Copy the received buffer data into the packet structure and append a null character to the string at the end */
 					memcpy(&barcode_packet.payload[0], &leuart_circbuff.buffer[temp_read_index], payload_size);
 					barcode_packet.payload[payload_size] = '\0';								/* Adding a NULL character at the end of string*/
 
 
 					//TODO: Now Start Sending data over bluetooth here.
-					snprintf(packet_send, payload_size + EXTRA_PAYLOAD_SIZE, "%s,%s\n", barcode_packet.payload, &barcode_packet.cost[0]);
+					snprintf(packet_send, total_payload_size, "%s,$%s\n", barcode_packet.payload, &barcode_packet.cost[0]);
 					printf("Packet to be sent over Bluetooth: %s \n", packet_send);
 
-
-//					while((payload_size + EXTRA_PAYLOAD_SIZE)% MAX_BLUETOOTH_SIZE_SEND)
-
-					if (payload_size + EXTRA_PAYLOAD_SIZE <= MAX_BLUETOOTH_SIZE_SEND)
+					do
 					{
-						printf("Send Result: %x\n",gecko_cmd_gatt_server_send_characteristic_notification(
-								connection_handle, gattdb_product_name, payload_size + EXTRA_PAYLOAD_SIZE, (const uint8 *)&packet_send[0])->result);
+						if (total_payload_size <= MAX_BLUETOOTH_SIZE_SEND)
+						{
+							printf("Send Result: %x\n",gecko_cmd_gatt_server_send_characteristic_notification(
+									connection_handle, gattdb_product_name, total_payload_size, (const uint8 *)&packet_send[0])->result);
+						}
+						total_payload_size -= MAX_BLUETOOTH_SIZE_SEND;
 					}
-//					else if (payload_size + EXTRA_PAYLOAD_SIZE > MAX_BLUETOOTH_SIZE_SEND)
-//					{
-//						printf("The data to send is greater than 20 bytes. \n");
-//
-//					}
+					while( total_payload_size > 0 /*&& (total_payload_size / MAX_BLUETOOTH_SIZE_SEND)*/);
 
 
 					/* Free the barcode_packet data structure after sending data */
