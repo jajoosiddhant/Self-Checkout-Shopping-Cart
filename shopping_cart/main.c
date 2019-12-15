@@ -66,6 +66,7 @@
 #define TIMER_CLK_FREQ 							((uint32)32768)				/* Timer Clock Frequency */
 #define TIMER_S_TO_TICKS(s)						(TIMER_CLK_FREQ * s)		/* Convert seconds to timer ticks */
 #define SOFT_TIMER_LEUART_INTERRUPT				(55)
+#define SOFT_TIMER_NFC_INTERRUPT				(56)
 #define CART_DEBUG_PRINTS						(1)							/* Comment this line to remove debug prints */*/
 #define EXTRA_PAYLOAD_SIZE						(1 + 1 + 3 + 1 + 1)				/* 1 byte for "," , 1 byte for "$", 3 bytes for cost, 1 byte for "\n" , 1 byte to accomodate NULL character*/
 #define MAX_BLUETOOTH_SIZE_SEND					(50)						/* This is the maximum bluetooth data size that can be sent in one go */
@@ -128,7 +129,7 @@ static uint8_t connection_handle;
 int payload_size = 0;							/* Payload_size to be sent to the android application */
 int total_cost = 0;								/* Total cost of the shopping list is stored here */
 
-//TODO: Reset Payload_size and total_cost at the end of transaction.
+//TODO: Reset Payload_size at the end of transaction.
 
 uint8_t write_nfc_row[16] = {0x03, 0x18, 0xD1, 0x01, 0x14, 0x54, 0x02, 0x65, 0x6E, 0x30, 0x30, 0x3A, 0x30, 0x42, 0x3A, 0x35};
 uint8_t write_nfc_row_1[16] = {0x37, 0x3A, 0x45, 0x46, 0x3A, 0x32, 0x39, 0x3A, 0x42, 0x31, 0xFE, 0x4F, 0x00, 0x00, 0x00, 0x00};
@@ -172,6 +173,10 @@ int main(void)
   memset(&leuart_circbuff, 0, sizeof(struct leuart_circbuff));
   memset(&barcode_packet, 0, sizeof(struct barcode_packet));
 
+  /* Initializing GPIO Interrupts for NFC, LEUART and I2C*/
+  gpio_init();
+  i2c_init();
+
   //Starting Software Timer for leuart interrupts.
   //gecko_cmd_hardware_set_soft_timer(TIMER_S_TO_TICKS(1), SOFT_TIMER_LEUART_INTERRUPT, 0);
 
@@ -199,11 +204,6 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 	case gecko_evt_system_boot_id:
 		printf("Event: gecko_evt_system_boot_id\n");
 
-		/* Initializing GPIO Interrupts for NFC, LEUART and I2C*/
-		gpio_init();
-		leuart_init();
-		i2c_init();
-
 		/*Set up Bluetooth connection parameters and start advertising */
 		bt_connection_init();
 
@@ -220,8 +220,16 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 
 	case gecko_evt_le_connection_opened_id:
+
 		printf("Event: gecko_evt_le_connection_opened_id\n");
 		char client_address_string[6];
+
+		/* Disabling NFC software timer on successful connection */
+		gecko_cmd_hardware_set_soft_timer(0, SOFT_TIMER_NFC_INTERRUPT, 0);
+
+		/* Enabling leuart only after successful connection */
+		leuart_init();
+
 		/*Configure Connection Parameters*/
 		gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection,
 													CON_INTERVAL_MIN,CON_INTERVAL_MAX,CON_LATENCY,CON_TIMEOUT);
@@ -259,8 +267,12 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 			/* Stop timer in case client disconnected before indications were turned off */
 			gecko_cmd_hardware_set_soft_timer(0, 0, 0);
-			/* Restart advertising after client has disconnected */
-			gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
+
+			/* Start NFC GPIO interrupt to reconnect using NFC */
+			GPIO_IntConfig(GPIO_NFC_PORT, GPIO_NFC_PIN, GPIO_RISING_EDGE, GPIO_FALLING_EDGE, GPIO_INTERRUPT_ENABLE);
+
+			//TODO: Disable leuart peripheral over here
+
 		}
 		break;
 
@@ -283,6 +295,8 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 	case gecko_evt_hardware_soft_timer_id:
 		switch (evt->data.evt_hardware_soft_timer.handle){
 		case SOFT_TIMER_LEUART_INTERRUPT:
+
+			printf("SOFT_TIMER_LEUART_INTERRUPT\n");
 			if(!leuart_buffer_empty_status())
 			{
 				CORE_AtomicDisableIrq();
@@ -292,6 +306,15 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 			}
 
 			break;
+
+		case SOFT_TIMER_NFC_INTERRUPT:
+
+			printf("SOFT_TIMER_NFC_INTERRUPT\n");
+			/* Stop advertising and enable interrupts */
+			gecko_cmd_le_gap_stop_advertising(0);
+			GPIO_IntConfig(GPIO_NFC_PORT, GPIO_NFC_PIN, GPIO_RISING_EDGE, GPIO_FALLING_EDGE, GPIO_INTERRUPT_ENABLE);
+
+
 		}
 		break;
 
@@ -315,6 +338,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 		{
 			printf("Total Cost set to 0\n");
 			total_cost = 0;
+			gecko_cmd_le_connection_close(connection_handle);		//Closing the connection since payment is completed
 		}
 
 
@@ -403,11 +427,17 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 		if (evt->data.evt_system_external_signal.extsignals & EVENT_NFC_GPIO)
 		{
+
 			CORE_AtomicDisableIrq();
 			external_event &= ~EVENT_NFC_GPIO;
 			CORE_AtomicEnableIrq();
 
 			printf("External Signal Event for NFC FD pin interrupt received.\n");
+
+			gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
+
+			gecko_cmd_hardware_set_soft_timer(TIMER_S_TO_TICKS(15), SOFT_TIMER_NFC_INTERRUPT, 1);
+
 		}
 
 		break;
@@ -486,7 +516,7 @@ static void bt_connection_init(void)
 
 	// Configure and start general advertising and enable connections.
 	gecko_cmd_le_gap_set_advertise_timing(ADV_HANDLE, ADV_INTERVAL_MIN, ADV_INTERVAL_MAX, ADV_TIMING_DURATION, ADV_MAXEVENTS);
-	gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
+
 }
 
 
