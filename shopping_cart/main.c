@@ -128,6 +128,8 @@ static uint8_t connection_handle;
 int payload_size = 0;							/* Payload_size to be sent to the android application */
 int total_cost = 0;								/* Total cost of the shopping list is stored here */
 
+//TODO: Reset Payload_size and total_cost at the end of transaction.
+
 uint8_t write_nfc_row[16] = {0x03, 0x18, 0xD1, 0x01, 0x14, 0x54, 0x02, 0x65, 0x6E, 0x30, 0x30, 0x3A, 0x30, 0x42, 0x3A, 0x35};
 uint8_t write_nfc_row_1[16] = {0x37, 0x3A, 0x45, 0x46, 0x3A, 0x32, 0x39, 0x3A, 0x42, 0x31, 0xFE, 0x4F, 0x00, 0x00, 0x00, 0x00};
 
@@ -229,9 +231,6 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 		sprintf(client_address_string,"X:X:X:X:%x:%x",client_address.addr[1],client_address.addr[0]);
 		printf("Client Address: %s \n", client_address_string);
 
-
-//		gecko_cmd_hardware_set_soft_timer(TIMER_S_TO_TICKS(8), SOFT_TIMER_LEUART_INTERRUPT, 0);
-
 		break;
 
 
@@ -267,18 +266,17 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 
 	case gecko_evt_gatt_server_execute_write_completed_id:
-		printf("Write Completed by Mobile application\n");
+		printf("Event: gecko_evt_gatt_server_execute_write_completed_id\n");
 		break;
 
 
 	case gecko_evt_gatt_service_id:
-		printf("GATT Service ID\n");
-		printf("Service %d\n", evt->data.evt_gatt_service.service);
+		printf("Event: gecko_evt_gatt_service_id\n");
 		break;
 
 
 	case gecko_evt_gatt_characteristic_value_id:
-		printf("Value ID\n");
+		printf("Event: gecko_evt_gatt_characteristic_value_id\n");
 		break;
 
 
@@ -299,15 +297,28 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
 
 	case gecko_evt_gatt_server_attribute_value_id:
-		gecko_cmd_hardware_set_soft_timer(0, SOFT_TIMER_LEUART_INTERRUPT, 0);
-		printf("Attribute value id\n");
+		printf("Event: gecko_evt_gatt_server_attribute_value_id\n");
+
 		char cost_string[4];
-		char * ptr = &cost_string[0];
+		char *ptr = &cost_string[0];
 		ptr = itoa(total_cost, cost_string, 10);
-		printf("Total cost decimal %d\n", total_cost);
-		printf("Total Cost %s\n",cost_string);
-		printf("Send Result: %x\n",gecko_cmd_gatt_server_send_characteristic_notification(
-																(uint8)connection_handle, (uint8)gattdb_product_name, (uint8)4, (uint8*)ptr)->result);
+		printf("Total cost decimal: %d\n", total_cost);
+		printf("Total Cost String: %s\n",cost_string);
+		printf("Received response: %c \n", evt->data.evt_gatt_server_attribute_value.value.data[0]);
+		if (evt->data.evt_gatt_server_attribute_value.value.len && (evt->data.evt_gatt_server_attribute_value.value.data[0] == 'B'))
+		{
+			printf("Sending Bill\n");
+			printf("Send Result: %x\n",gecko_cmd_gatt_server_send_characteristic_notification(
+					(uint8)connection_handle, (uint8)gattdb_product_name, (uint8)4, (const uint8*)ptr)->result);
+		}
+		else if (evt->data.evt_gatt_server_attribute_value.value.len && (evt->data.evt_gatt_server_attribute_value.value.data[0] == 'P'))
+		{
+			printf("Total Cost set to 0\n");
+			total_cost = 0;
+		}
+
+
+
 		break;
 
 
