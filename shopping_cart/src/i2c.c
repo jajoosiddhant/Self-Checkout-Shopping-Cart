@@ -309,7 +309,7 @@ void i2c_test_blocking(void)
 		write_nfc_row[i] = blue_gecko_addr[i-7];
 	}
 
-	i2c_write_poll(0x03, write_nfc_row);
+	i2c_write_poll(0x01, write_nfc_row);
 
 	delay(DELAY_TIME);
 
@@ -318,6 +318,17 @@ void i2c_test_blocking(void)
 	{
 		printf("Data into the address %x -- %x\n", (0x03+i), received_i2c[i]);
 	}
+}
+
+inline void nxp_ntag_nfc_write(uint8_t *arr, uint8_t row)
+{
+	i2c_write_poll(row, arr);
+}
+
+inline uint8_t* nxp_ntag_nfc_read(uint8_t *arr, uint8_t row)
+{
+	arr = i2c_read_poll(row);
+	return arr;
 }
 
 

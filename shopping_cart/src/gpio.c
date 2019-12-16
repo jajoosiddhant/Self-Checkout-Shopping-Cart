@@ -47,14 +47,13 @@ void GPIO_ODD_IRQHandler(void)
 
 	if (flags & GPIO_NFC_INTERRUPT_FLAG)
 	{
-		//Update the External Event after every NFC FD PIN interrupt
+		/* Update the External Event after every NFC FD PIN interrupt */
 		external_event |= EVENT_NFC_GPIO;
 		gecko_external_signal(external_event);
 
-		//TODO: Disable the GPIO interrupt here to remove multiple NFC interrupts and enable only after
-		//a bluetooth connection is established or set a software timer to enable enable interrupt after a certain amount of time.
-
-		//TODO: Or enable interrupts again if we get a rising edge interrupt on the GPIO pin.
+		/* Disable the GPIO interrupt here to remove multiple NFC interrupts and enable only after bluetooth
+		 connection is established or set a software timer to enable enable interrupt after a certain amount of time */
+		GPIO_IntDisable(GPIO_NFC_INTERRUPT_FLAG);
 	}
 
 	/* Enable All Interrupts */

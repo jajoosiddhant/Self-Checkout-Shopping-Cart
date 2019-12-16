@@ -13,7 +13,7 @@
 
 
 #define BARCODE_PREAMBLE		(126)		/* Ascii equivalent of ~ */
-#define BARCODE_POSTAMBLE		(96)		/* Ascii equivalent of \ */
+#define BARCODE_POSTAMBLE		(96)		/* Ascii equivalent of ` */
 #define ASCII_DIGIT_START		(48)		/* Ascii Value for interger 0 */
 
 
@@ -48,7 +48,7 @@ struct barcode_packet barcode_packet;							/*Only one instance of barcode packe
 /* Function Declarations */
 void barcode_test_blocking(void);
 void barcode_test_blocking_scanning(void);
-void barcode_packet_create(struct barcode_packet* barcode_packet, int * payload_size);
-
-
+int barcode_packet_create(struct barcode_packet* barcode_packet, int * payload_size);
+char* itoa(int num, char* str, int base);
+void swap(char *x, char *y);
 #endif /* INC_BARCODE_H_ */
