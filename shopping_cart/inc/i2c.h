@@ -16,8 +16,8 @@
 
 
 
-#define NXP_NTAG_R (0x05) //NXP NTAG NFC Read Command
-#define NXP_NTAG_W (0x04) //NXP NTAG NFC Write Command
+#define NXP_NTAG_R (0x05) 										//NXP NTAG NFC Read Command
+#define NXP_NTAG_W (0x04) 										//NXP NTAG NFC Write Command
 
 
 /* SCL and SDA pins for I2C*/

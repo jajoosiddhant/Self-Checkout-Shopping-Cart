@@ -14,6 +14,12 @@
 #include "em_leuart.h"
 
 
+#define LEUART_TX_PORT							(gpioPortD)
+#define LEUART_TX_PIN							(10)
+#define LEUART_RX_PORT							(gpioPortD)
+#define LEUART_RX_PIN							(11)
+
+
 #define LEUART_BUFFER_MAXSIZE					(512)
 #define LEUART_BUFFER_INTERRUPT_SIZE			(10)
 #define LEUART_INTERRUPT_TIMER					(1)
@@ -53,6 +59,7 @@ void leuart_init(void);
 void leuart_buffer_push(void);
 char leuart_buffer_pop(void);
 bool leuart_buffer_empty_status(void);
+void leuart_disable(void);
 void leuart_loopback_test_blocking(void);
 void leuart_loopback_test_non_blocking(void);
 
