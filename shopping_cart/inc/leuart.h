@@ -15,9 +15,9 @@
 
 
 #define LEUART_TX_PORT							(gpioPortD)
-#define LEUART_TX_PIN							(10)
+#define LEUART_TX_PIN							(10)								/* TX (Pin Number 7) */
 #define LEUART_RX_PORT							(gpioPortD)
-#define LEUART_RX_PIN							(11)
+#define LEUART_RX_PIN							(11)								/* RX (Pin Number 9) */
 
 
 #define LEUART_BUFFER_MAXSIZE					(512)
