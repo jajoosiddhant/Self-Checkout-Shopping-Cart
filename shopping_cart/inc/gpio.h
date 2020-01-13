@@ -15,7 +15,7 @@
 
 /* Macros */
 #define GPIO_NFC_PORT							(gpioPortC)
-#define GPIO_NFC_PIN							(9)
+#define GPIO_NFC_PIN							(9)								/* Pin number 10 */
 #define GPIO_RISING_EDGE						(false)
 #define GPIO_FALLING_EDGE						(true)
 #define GPIO_INTERRUPT_ENABLE					(true)

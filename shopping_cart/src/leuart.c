@@ -31,8 +31,8 @@ static void leuart_gpio_init(void)
 
 
 	/* Initialize LEUART0 TX and RX pins */
-	GPIO_PinModeSet(gpioPortD, 10, gpioModePushPull, 1); 								/* TX (Pin Number 7) */
-	GPIO_PinModeSet(gpioPortD, 11, gpioModeInputPull, 1);   							/* RX (Pin Number 9) */
+	GPIO_PinModeSet(LEUART_TX_PORT, LEUART_TX_PIN, gpioModePushPull, 1); 								/* TX (Pin Number 7) */
+	GPIO_PinModeSet(LEUART_RX_PORT, LEUART_RX_PIN, gpioModeInputPull, 1);   							/* RX (Pin Number 9) */
 }
 
 
@@ -55,7 +55,6 @@ void LEUART0_IRQHandler(void)
 	if (flags & LEUART_IF_RXDATAV)
 	{
 
-		//TODO: Need to implement a Software Timer as well here for triggering external event ID.
 		if(leuart_circbuff.buffer_interrupt_count == LEUART_BUFFER_INTERRUPT_SIZE)
 		{
 			//Update the External Event after every BUFFER_INTERRUPT_SIZE(define in leuart.h) bytes of receiving data
@@ -185,6 +184,20 @@ bool leuart_buffer_empty_status(void)
 	return false;
 }
 
+
+/**
+ * @brief This function is used to disable the I2C peripheral.
+ * @param void
+ * @return void
+ */
+void leuart_disable(void)
+{
+	LEUART0 -> ROUTEPEN &= ~LEUART_ROUTEPEN_RXPEN;
+	LEUART0 -> ROUTEPEN &=~ LEUART_ROUTEPEN_TXPEN;
+	LEUART_Enable(LEUART0, false);
+	GPIO_PinOutClear(LEUART_TX_PORT, LEUART_TX_PIN); 					/* TX line */
+	GPIO_PinOutClear(LEUART_RX_PORT, LEUART_RX_PIN);					/* RX Line */
+}
 
 /**
  * @brief Function to test LEUART0 peripheral in loopback using blocking mode.

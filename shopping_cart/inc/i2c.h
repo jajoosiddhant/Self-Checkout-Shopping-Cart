@@ -16,8 +16,8 @@
 
 
 
-#define NXP_NTAG_R (0x05) //NXP NTAG NFC Read Command
-#define NXP_NTAG_W (0x04) //NXP NTAG NFC Write Command
+#define NXP_NTAG_R (0x05) 										//NXP NTAG NFC Read Command
+#define NXP_NTAG_W (0x04) 										//NXP NTAG NFC Write Command
 
 
 /* SCL and SDA pins for I2C*/
@@ -40,8 +40,8 @@ void i2c_disable(void);
 uint8_t* i2c_read_poll(uint8_t register_address);
 uint8_t i2c_read_session_poll(uint8_t session_register);
 void i2c_test_blocking(void);
-inline uint8_t* nxp_ntag_nfc_read(uint8_t *arr, uint8_t row);
-inline void nxp_ntag_nfc_write(uint8_t *arr, uint8_t row);
+uint8_t* nxp_ntag_nfc_read(uint8_t *arr, uint8_t row);
+void nxp_ntag_nfc_write(uint8_t *arr, uint8_t row);
 
 
 #endif /* INC_I2C_H_ */

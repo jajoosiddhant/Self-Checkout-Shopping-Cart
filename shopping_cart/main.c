@@ -129,7 +129,6 @@ static uint8_t connection_handle;
 int payload_size = 0;							/* Payload_size to be sent to the android application */
 int total_cost = 0;								/* Total cost of the shopping list is stored here */
 
-//TODO: Reset Payload_size at the end of transaction.
 
 uint8_t write_nfc_row[16] = {0x03, 0x18, 0xD1, 0x01, 0x14, 0x54, 0x02, 0x65, 0x6E, 0x30, 0x30, 0x3A, 0x30, 0x42, 0x3A, 0x35};
 uint8_t write_nfc_row_1[16] = {0x37, 0x3A, 0x45, 0x46, 0x3A, 0x32, 0x39, 0x3A, 0x42, 0x31, 0xFE, 0x4F, 0x00, 0x00, 0x00, 0x00};
@@ -271,8 +270,8 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 			/* Start NFC GPIO interrupt to reconnect using NFC */
 			GPIO_IntConfig(GPIO_NFC_PORT, GPIO_NFC_PIN, GPIO_RISING_EDGE, GPIO_FALLING_EDGE, GPIO_INTERRUPT_ENABLE);
 
-			//TODO: Disable leuart peripheral over here
-
+			/* Disable leuart peripheral over here */
+			leuart_disable();
 		}
 		break;
 

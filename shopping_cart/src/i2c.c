@@ -320,12 +320,14 @@ void i2c_test_blocking(void)
 	}
 }
 
-inline void nxp_ntag_nfc_write(uint8_t *arr, uint8_t row)
+
+void nxp_ntag_nfc_write(uint8_t *arr, uint8_t row)
 {
 	i2c_write_poll(row, arr);
 }
 
-inline uint8_t* nxp_ntag_nfc_read(uint8_t *arr, uint8_t row)
+
+uint8_t* nxp_ntag_nfc_read(uint8_t *arr, uint8_t row)
 {
 	arr = i2c_read_poll(row);
 	return arr;

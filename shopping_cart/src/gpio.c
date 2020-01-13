@@ -18,7 +18,11 @@
 #include "inc/external_events.h"
 
 
-
+/**
+ * @brief This function initializes the GPIO for NFC interrupt.
+ * @param void
+ * @return void
+ */
 void gpio_init(void)
 {
 	/* Configure GPIO for FD pin on NFC Sensor */
@@ -35,6 +39,9 @@ void gpio_init(void)
 }
 
 
+/**
+ * @brief Callback function for GPIO interrupt.
+ */
 void GPIO_ODD_IRQHandler(void)
 {
 	/* Disable All Interrupts */
