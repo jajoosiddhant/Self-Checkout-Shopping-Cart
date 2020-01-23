@@ -42,9 +42,52 @@ This project was completed in the course Low Power Embedded Design Techniques at
 
 ## Block Diagram:
 
+### Hardware Block Diagram
+
+<p align="middle">
+<img src="Project_Images/LPEDT-BLOCK-DIAGRAM-NEW.jpg">
+</p>
+
+### Software Block Diagram
+
+<p align="middle">
+<img src="Project_Images/software_block.jpg">
+</p>
+
 
 ## Overview:
+The “Self-Checkout Shopping Cart” is an innovative consumer purchasing product that is designed to help shoppers fast-track their shopping experience! The shopping cart has an inbuilt barcode scanner which can be used to scan the items to be purchased. The device communicates with the phone over the Bluetooth and bill is generated based on the items. Android app can be used for payment and faster checkout. With the advent of energy efficient devices and low power nodes, it has become imperative to design boards that consume low power which can last longer. To that end, we are designing nodes in order to consume minimal energy and address the issues mentioned below.
+
+PROJECT SOLVES THE FOLLOWING PROBLEMS
+1.	Customers usually get annoyed because of the long queues in the billing section of the huge shopping markets. 
+2.	In addition to that keeping track of all the bills and budget is a very burdensome task.
+3.	Usage of lot of manpower in large supermarkets which can be expensive.
+4.	Stock management in supermarkets.
+All these problems could be addressed by our “Self-Checkout Shopping Cart”.
 
 
-## Android Application
+SOLUTIONS
+1.	Fast self-checkout saves time of customers and helps them buy items according to their budget.
+2.	Electronic bill is generated and saved in the cloud which makes it easy to keep track of all the bills and saves paper.
+3.	By letting customers handle their own scanning and bagging, workers can spend their time helping customers find what they need. 
+4.	Better shopping experience for the customers and an innovative way for the sellers to attract customers.
 
+
+
+The entire project report can be found [here](https://github.com/jajoosiddhant/Self-Checkout-Shopping-Cart/blob/master/Project_Report.pdf).
+
+The entire project ppt can be found [here](https://github.com/jajoosiddhant/Self-Checkout-Shopping-Cart/blob/master/Project_PPT.pptx).
+
+The android application apk can be found [here](https://github.com/jajoosiddhant/Self-Checkout-Shopping-Cart/blob/master/ShoppingCart.apk).
+
+Weekly project updates can be found [here](https://github.com/jajoosiddhant/Self-Checkout-Shopping-Cart/tree/master/Project_Updates).
+
+PCB schematic layout can be found here [here](https://github.com/jajoosiddhant/Self-Checkout-Shopping-Cart/blob/master/Altium_layout_schematic.pdf).
+
+Final altium Design zip file can be found [here](https://github.com/jajoosiddhant/Self-Checkout-Shopping-Cart/blob/master/Final_Design_Altium.zip).
+
+Final code zip file can be found [here](https://github.com/jajoosiddhant/Self-Checkout-Shopping-Cart/blob/master/shopping_cart_code.zip).
+
+
+There are different branches for various stages of development throughout the project.  
+[cart_v1.0](https://github.com/jajoosiddhant/Self-Checkout-Shopping-Cart/tree/cart_v1.0) has the final code and master being the latest branch with all the other components.
