@@ -1,4 +1,4 @@
-# Self-Checkout-Shopping-Cart
+# Self-Checkout-Shopping-Cart ([DEMO VIDEO](https://drive.google.com/file/d/1PHqSrd3S05qmIQ_HfaXPMp07Jxs_gFq5/view?pli=1))
 
 <p align="middle">
 <img src="Project_Images/project_pcb.PNG">
