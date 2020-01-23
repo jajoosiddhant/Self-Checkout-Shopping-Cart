@@ -1,5 +1,15 @@
 # Self-Checkout-Shopping-Cart
 
+<p align="middle">
+<img src="Project_Images/project_pcb.PNG">
+</p>
+
+
+<p align="middle">
+<img src="Project_Images/pcb.PNG">
+</p>
+
+
 ## Contributors: 
 - Siddhant Jajoo 
 - Satya Mehta 
