@@ -38,6 +38,7 @@ This project was completed in the course Low Power Embedded Design Techniques at
 - Simplicity Studio
 - Android Application
 
+
 ## Features:
 -	The device connects with an android application using Bluetooth and Bluetooth authentication/pairing is done using NFC for faster and secure connection.
 -	The Barcode Sensor scans QR codes/Barcodes to obtain the information of the product including the name and cost using Low Energy UART peripheral on EFR32BG13.
